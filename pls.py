@@ -1,5 +1,5 @@
 from cmd import Cmd
-from sshpubkeys import SSHkey
+from sshpubkeys import SSHKey
 from socket import *
 
 import time
@@ -20,22 +20,35 @@ class PrivledgeShell(Cmd):
 
     def do_list(self, args):
         """Attempts to find existing ledgers"""
-        if len(args) == 0:
+        ip = '<broadcast>'
+        if len(args) > 0:
             # search LAN for available ledgers
-            print("Looking for available ledgers for 30 seconds...")
-            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            s.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-            s.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
-            s.sendto('Hey you guys!', ('<broadcast>', 2525))
+            ip = args[0]
+
+        print("Looking for available ledgers for 10 seconds...")
+        s = socket(AF_INET, SOCK_DGRAM)
+        s.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+        s.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
+        s.sendto('Hey you guys!'.encode(), (ip, 2525))
+        try:
+            s.settimeout(10)
 
             results = dict()
-            timeout = time.time() + 30
+            timeout = time.time() + 10
             while time.time() < timeout:
                 data,address = s.recvfrom(1024)
                 results[address] = data
                 time.sleep(1)
-
+            print("Time's up!")
             print(results)
+        except Exception as e:
+            pass
+
+        if len(results) > 0:
+            print(results)
+        else:
+            print("No ledgers found.")
+
 
 
 if __name__ == '__main__':
