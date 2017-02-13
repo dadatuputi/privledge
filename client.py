@@ -12,8 +12,8 @@ def udp_server():
         data, addr = server.recvfrom(1024)
         print(data)
         print(addr)
-        if data=="Hey you guys!":
-            server.sendto("Sup Homie!".encode(), addr)
+        #if data=="Hey you guys!":
+        server.sendto("Sup Homie!".encode(), addr)
 
 if __name__ == '__main__':
     udp_server()
