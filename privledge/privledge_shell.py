@@ -1,23 +1,30 @@
 from cmd import Cmd
 from sshpubkeys import SSHKey
 from socket import *
-from termcolor import colored, cprint
-
 import time
 
+from privledge.privledge_daemon import PrivledgeDaemon
+from privledge.utilities import *
+
+
 class PrivledgeShell(Cmd):
+
+    def __init__(self, daemon):
+        super(PrivledgeShell, self).__init__()
+        self.prompt = '> '
+        self.cmdloop('Welcome to Privledge Shell...')
 
     def do_init(self, args):
         """Initialize the ledger with a provided Root of Trust (RSA Public Key)"""
         if len(args) == 0:
             print("Please provide a public key as your new Root of Trust")
         else:
-            if (args == "default"):
+            if (args.lower() == "default"):
                 key = open('id_rsa_test.pub')
                 args=key.read()
                 key.close()
                 print("Importing Test Key...")
-                cprint("DO NOT USE IN PRODUCTION:", 'red', 'on_white')
+                log_message("DO NOT USE IN PRODUCTION:", Level.HIGH)
                 print(args)
 
             ssh = SSHKey(args.strip(), strict_mode=True)
@@ -31,7 +38,18 @@ class PrivledgeShell(Cmd):
             except Exception as err:
                 print("Invalid key: "+ str(err))
 
+    def do_debug(self, args):
+        """Toggles printing of debug information"""
+        global debug
 
+        if len(args) == 0:
+            debug = not debug
+        elif args.lower() in ['true', 'on', '1']:
+            debug = True
+        elif args.lower() in ['false', 'off', '0']:
+            debug = False
+
+        print("Debug mode is {}".format(debug))
 
 
     def do_quit(self, args):
@@ -64,21 +82,9 @@ class PrivledgeShell(Cmd):
             pass
 
         if len(results) > 0:
-            pass
+            print("Found " + str(len(results)) + " available ledgers")
         else:
             print("No ledgers found.")
 
-def start_shell():
-    prompt = PrivledgeShell()
-    prompt.prompt = '> '
-    prompt.cmdloop('Welcome to privledge Shell...')
-
-
-if __name__ == '__main__':
-    start_shell()
-
-
 def emptyline(self):
     pass
-
-
