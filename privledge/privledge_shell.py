@@ -1,55 +1,84 @@
 from cmd import Cmd
 from sshpubkeys import SSHKey
-from socket import *
-import time
 
-from privledge.privledge_daemon import PrivledgeDaemon
-from privledge.utilities import *
+from privledge import utils
+from privledge import settings
+from privledge.privledge_daemon import DiscoverLedgerThread
+
+import time
+import threading
+import socket
+from os import system
 
 
 class PrivledgeShell(Cmd):
 
+    results = dict()
+
     def __init__(self, daemon):
         super(PrivledgeShell, self).__init__()
+
+        self.daemon = daemon
+
+        # Start the command loop - these need to be the last lines in the initializer
         self.prompt = '> '
         self.cmdloop('Welcome to Privledge Shell...')
 
     def do_init(self, args):
         """Initialize the ledger with a provided Root of Trust (RSA Public Key)"""
+
+        # Give error with no key, use default key, or provide
         if len(args) == 0:
-            print("Please provide a public key as your new Root of Trust")
+            print("Please provide an RSA key as your new Root of Trust.")
+            return
         else:
-            if (args.lower() == "default"):
-                key = open('id_rsa_test.pub')
-                args=key.read()
-                key.close()
-                print("Importing Test Key...")
-                log_message("DO NOT USE IN PRODUCTION:", Level.HIGH)
-                print(args)
+            args_list = args.split()
+            if args_list[0].lower() == "generate":
+                # Generate an RSA key
 
-            ssh = SSHKey(args.strip(), strict_mode=True)
+                if len(args_list) == 1:
+                    # Generate a RSA key in memory
+                    key = utils.generate_openssh_key()
+                else:
+                    # Generate and save RSA key
+                    key = utils.generate_openssh_key(True, args_list[0])
 
-            try:
-                ssh.parse()
-                print("\nKey Info:")
-                print("\tBits: " + str(ssh.bits))
-                print("\tHash: " + ssh.hash_sha256())
-                print("\tComment: " + ssh.comment)
-            except Exception as err:
-                print("Invalid key: "+ str(err))
+            else:
+                # Try to import provided key
+                key = utils.get_key(args)
+
+                if key is None:
+                    print("Could not import the provided key")
+                    return
+
+        # If we made it this far we have a valid key
+        # Store generated key in our daemon for now
+        try:
+            key_contents = key.publickey().exportKey('OpenSSH').decode()
+            ssh = SSHKey(key_contents, strict_mode=True)
+            ssh.parse()
+            key.pub = ssh
+            self.daemon.set_root(key)
+
+            print("\nPublic Key Info:")
+            print("\tBits: {0}".format(len(key.publickey().exportKey('OpenSSH'))*8))
+            print("\tHash: {0}".format(ssh.hash_sha256()))
+            utils.log_message("Added key as a new Root of Trust", utils.Level.MEDIUM, True)
+        except Exception as err:
+            print("Invalid key: "+ str(err))
+
 
     def do_debug(self, args):
         """Toggles printing of debug information"""
-        global debug
 
         if len(args) == 0:
-            debug = not debug
+            settings.debug = not settings.debug
         elif args.lower() in ['true', 'on', '1']:
-            debug = True
+            settings.debug = True
         elif args.lower() in ['false', 'off', '0']:
-            debug = False
+            settings.debug = False
 
-        print("Debug mode is {}".format(debug))
+        print("Debug mode is {}".format(settings.debug))
 
 
     def do_quit(self, args):
@@ -58,33 +87,72 @@ class PrivledgeShell(Cmd):
         raise SystemExit
 
     def do_list(self, args):
-        """Attempts to find existing ledgers"""
+        """Attempt to find existing ledgers. Provide an ip address, otherwise the local broadcast will be used. You may force an update by entering 'update'"""
+
+        # No args provided
+        if len(args) == 0:
+            if len(self.results) > 0:
+                # Look for cached ledger list
+                self.display_ledger()
+                return
+            else:
+                # Force update if no previous results
+                args = 'update'
+
         ip = '<broadcast>'
+
+        # Check for 'update' keyword
         if len(args) > 0:
-            # search LAN for available ledgers
-            ip = args[0]
+            if args.lower().strip() != 'update':
+                ip = args
 
-        print("Searching for available ledgers for 10 seconds...")
-        s = socket(AF_INET, SOCK_DGRAM)
-        s.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-        s.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
-        s.sendto('Hey you guys!'.encode(), (ip, 2525))
-        try:
-            # Listen for responses for 10 seconds
-            s.settimeout(10)
-            results = dict()
-            while True:
-                data,address = s.recvfrom(1024)
-                print("Response from " + str(address) + ": " + data.decode())
-                results[address] = data
+                # Check for a valid IP
+                try:
+                    socket.inet_aton(ip)
+                except socket.error:
+                    print("You entered an invalid IP address")
+                    return
+
+            # We need to start discovery process
+            print("Searching for available ledgers for {0} seconds...".format(settings.DISCOVERY_TIMEOUT))
+            self.results.clear()
+
+            # Set up discover thread
+            found_event = threading.Event()
+            discover_thread = DiscoverLedgerThread(found_event, self.results, settings.DISCOVERY_TIMEOUT, ip)
+            discover_thread.start()
+
+            # Wait for discovery to finish
+            for i in range(1, settings.DISCOVERY_TIMEOUT):
+                if found_event.is_set():
+                    print('*', end='', flush=True)
+                    found_event.clear()
+                else:
+                    print('°', end='', flush=True)
                 time.sleep(1)
-        except Exception as e:
-            pass
 
-        if len(results) > 0:
-            print("Found " + str(len(results)) + " available ledgers")
-        else:
-            print("No ledgers found.")
+            discover_thread.join()
+
+            # Process results
+            self.display_ledger()
+
+    def default(self, args):
+        """Passes unrecognized commands through to the operating system"""
+
+        system(args)
+
+
+
+    def display_ledger(self):
+        print("\nFound {0} available ledgers".format(str(len(self.results))))
+
+        if len(self.results) > 0:
+
+            i = 0
+            for ledger in self.results:
+                i += 1
+                print("{0}: ({1} members) {2}".format(i, len(self.results[ledger]), ledger.decode()))
+
 
 def emptyline(self):
     pass
