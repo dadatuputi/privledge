@@ -1,17 +1,19 @@
-import threading
-
 from privledge import settings
-from privledge.privledge_shell import PrivledgeShell
-from privledge.privledge_daemon import PrivledgeDaemon
+from privledge import PrivledgeShell
+from privledge import PrivledgeDaemon
+
 
 # STARTUP
 def start_privledge():
+    # Initialize any global variables
     settings.init()
+
     # Start up Daemon threads
-    daemon_thread = PrivledgeDaemon()
-    daemon_thread.start()
+    daemon = PrivledgeDaemon()
+
     # Start up shell
-    prompt = PrivledgeShell(daemon_thread)
+    PrivledgeShell(daemon)
+
 
 if __name__ == '__main__':
     start_privledge()
