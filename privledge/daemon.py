@@ -311,7 +311,7 @@ class TCPListener(threading.Thread):
                 thread.join()
 
         except Exception as e:
-            print("Could not bind to port")
+            print("Could not bind to port: {0}".format(e))
 
 
 
