@@ -172,7 +172,7 @@ class TCPMessageThread(threading.Thread):
             data = True
 
             while data:
-                data = s.recv(4096)
+                data = s.recv()
                 self.message += data.decode()
 
             with lock:
@@ -226,6 +226,8 @@ class DiscoverLedgerThread(threading.Thread):
 
                 self._found_event.set()
         except Exception as e:
+            utils.log_message("Exception: {0}".format(e))
+        finally:
             s.close()
 
 
@@ -304,14 +306,14 @@ class TCPListener(threading.Thread):
                 except Exception as e:
                     continue
 
-            tcp_server_socket.close()
-
             # Clean up all the threads
             for thread in socket_threads:
                 thread.join()
 
         except Exception as e:
             print("Could not bind to port: {0}".format(e))
+        finally:
+            tcp_server_socket.close()
 
 
 
@@ -333,7 +335,7 @@ class TCPConnectionThread(threading.Thread):
         message = ''
         data = True
         while data:
-            data = self._socket.recv(1024)
+            data = self._socket.recv()
             message+=data.decode()
 
 
