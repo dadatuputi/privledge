@@ -2,6 +2,7 @@ from termcolor import cprint
 from enum import Enum
 from privledge import settings
 from Crypto.PublicKey import RSA
+import hashlib
 
 import os.path
 from os import chmod
@@ -32,7 +33,6 @@ def log_message(message, priority = Level.LOW, force = False):
         cprint(message, color, background)
 
 def get_key(message=None):
-    message = None
 
     # Check for RSA key
     if message is not None:
@@ -79,7 +79,8 @@ def generate_openssh_key(save=False, filename='id_rsa', location='', keylength=2
 
     return key
 
-
+def gen_id(key):
+    return hashlib.sha1(key).hexdigest()
 
 
 
