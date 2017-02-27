@@ -90,6 +90,7 @@ class PrivledgeShell(Cmd):
         if len(args) == 0:
             if len(self.results) > 0:
                 # Look for cached ledger list
+                utils.log_message("Using cached results, use 'list update' to force an update.", force=True)
                 self.display_ledger()
                 return
             else:
@@ -137,8 +138,7 @@ class PrivledgeShell(Cmd):
             return
 
         # Pass the daemon the hash and members
-        daemon.join_ledger(list(self.results.keys())[number], list(self.results.values())[number])
-
+        daemon.join_ledger(list(self.results.keys())[number-1], list(self.results.values())[number-1])
 
 
     def do_leave(self, args):
@@ -154,14 +154,19 @@ class PrivledgeShell(Cmd):
 
 
     def display_ledger(self):
-        print("\nFound {0} available ledgers".format(str(len(self.results))))
+        print("Found {0} available ledgers".format(str(len(self.results))))
 
         if len(self.results) > 0:
 
+            member = ''
             i = 0
             for ledger in self.results:
                 i += 1
-                print("{0}: ({1} members) {2}".format(i, len(self.results[ledger]), ledger.decode()))
+                if daemon.ledger is not None and daemon.ledger.id == ledger.decode().strip():
+                    member = '(member)'
+                else:
+                    member = ''
+                print("{0}: ({1} members) {2} {3}".format(i, len(self.results[ledger]), ledger.decode(), member))
 
 
 def emptyline(self):

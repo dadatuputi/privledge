@@ -4,5 +4,5 @@ BIND_PORT = 2525
 
 def init():
     global debug
-    debug = False
+    debug = True
 
