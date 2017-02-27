@@ -127,17 +127,22 @@ class JoinLedgerThread(threading.Thread):
 
     def run(self):
 
+        threads = dict()
+
         # Spawn a TCP message thread for each member of the ledger
         for member in self._members:
             with lock:
                 utils.log_message("Spawning TCP Connection Thread to {0}:{1}".format(member[0], member[1]))
-            thread = TCPMessageThread(member, "{0}: {1}".format("join", self._root_hash))
+            join_message = {'request': 'join', 'message': self._root_hash.decode()}
+            join_message = json.dumps(join_message)
+            thread = TCPMessageThread(member, join_message)
             thread.start()
-            self.results[member] = thread
+            threads[member] = thread
 
         # Wait for all the threads to finish
-        for thread in self.results:
-            thread.join()
+        for address in threads:
+            threads[address].join()
+            self.results[address] = threads[address].message
 
 
 
@@ -154,25 +159,36 @@ class TCPMessageThread(threading.Thread):
 
     def run(self):
         s = socket(AF_INET, SOCK_STREAM)
-        s.connect(self._target)
-        s.send(self.message)
-        s.flush()
-
-        # Store data in buffer until other side closes connection
-        self.message = ''
-        data = True
 
         try:
-            s.settimeout(self._timeout)
+            s.connect(self._target)
+            s.send(self.message)
+            s.flush()
 
-            while data:
-                data = s.recvfrom(1024)
-                self.message += data
+            # Store data in buffer until other side closes connection
+            self.message = ''
+            data = True
+
+            try:
+                s.settimeout(self._timeout)
+
+                while data:
+                    data = s.recvfrom(1024)
+                    self.message += data
+            except Exception as e:
+                s.close()
+
+            with lock:
+                utils.log_message(
+                    "Received Response from {0} {1}: {2}{3}".format(self._target[0], self._target[1], self.message[:10],
+                                                                    '...'))
+
         except Exception as e:
+            print("Could not connect to the specified ledger")
+        finally:
             s.close()
 
-        with lock:
-            utils.log_message("Received Response from {0} {1}: {2}{3}".format(self._target[0], self._target[1], self.message[:10], '...'))
+
 
 
 # Thread for discovering Ledgers
@@ -199,6 +215,9 @@ class DiscoverLedgerThread(threading.Thread):
             s.settimeout(self._timeout)
             while True:
                 data, address = s.recvfrom(1024)
+
+                with lock:
+                    utils.log_message("Discovered ledger {0} at {1}".format(data, address))
 
                 # Received response
                 # Is the hash already in our list?
@@ -267,6 +286,7 @@ class TCPListener(threading.Thread):
         tcp_server_socket = socket(AF_INET, SOCK_STREAM)
         tcp_server_socket.bind((self._ip, self._port))
         tcp_server_socket.setblocking(False)
+        tcp_server_socket.listen()
 
         # List for managing spawned threads
         socket_threads = []
