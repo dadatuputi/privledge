@@ -165,20 +165,15 @@ class TCPMessageThread(threading.Thread):
 
         try:
             s.connect(self._target)
-            s.send(self.message.encode())
+            s.sendall(self.message.encode())
 
             # Store data in buffer until other side closes connection
             self.message = ''
             data = True
 
-            try:
-                s.settimeout(self._timeout)
-
-                while data:
-                    data = s.recv(1024)
-                    self.message += data
-            except Exception as e:
-                s.close()
+            while data:
+                data = s.recv(4096)
+                self.message += data.decode()
 
             with lock:
                 utils.log_message(
@@ -369,10 +364,11 @@ class TCPConnectionThread(threading.Thread):
 
         # No response, send error status
         else:
-
             response['status'] = 404
 
         # Send response & close socket
         response_json = json.dumps(response)
-        self._socket.send(response_json.encode())
+        with lock:
+            utils.log_message("Responded with message to {0}:\n{1}".format(self._socket.getsockname(),response_json))
+        self._socket.sendall(response_json.encode())
         self._socket.close()
