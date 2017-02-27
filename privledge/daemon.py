@@ -172,7 +172,7 @@ class TCPMessageThread(threading.Thread):
             data = True
 
             while data:
-                data = s.recv()
+                data = s.recv(4096)
                 self.message += data.decode()
 
             with lock:
@@ -337,7 +337,7 @@ class TCPConnectionThread(threading.Thread):
         message = ''
         data = True
         while data:
-            data = self._socket.recv()
+            data = self._socket.recv(4096)
             message+=data.decode()
 
 
