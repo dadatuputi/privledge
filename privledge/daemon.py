@@ -38,9 +38,9 @@ def join_ledger(public_key_hash, members):
     global ledger
 
     # Check to make sure we aren't part of a ledger yet
-    if ledger is not None:
-        print("You are already a member of a ledger")
-        return
+    # if ledger is not None:
+    #     print("You are already a member of a ledger")
+    #     return
 
     join_thread = JoinLedgerThread(public_key_hash, members)
     join_thread.start()
@@ -49,24 +49,27 @@ def join_ledger(public_key_hash, members):
     # Parse through the worker threads' results
     results = join_thread.results
     for target in results:
-        decoded = json.loads(results[target])
+        value = results[target]
+        if value is not None and value is not '':
+            decoded = json.loads(results[target])
 
-        '''
-        Look for a json encoded string in this format:
-            status (200/404)
-            public_key (public key)
-        '''
+            '''
+            Look for a json encoded string in this format:
+                status (200/404)
+                public_key (public key)
+            '''
 
-        # If the message is properly formatted, try to parse the message as a key
-        if 'status' in decoded and decoded['status'] == 200 and 'public_key' in decoded:
-            key = utils.get_key(decoded['public_key'])
-            if public_key_hash == utils.gen_id(key.publickey().exportKey()):
-                # Hooray! Create new ledger and add new member
-                if ledger is None:
-                    ledger = Ledger(key.publickey())
-                ledger.add_peer(target[0])
-        else:
-            utils.log_message("Not a valid response from {0}: {1}".format(target[0], results[target]))
+            # If the message is properly formatted, try to parse the message as a key
+            if 'status' in decoded and decoded['status'] == 200 and 'public_key' in decoded:
+                key = utils.get_key(decoded['public_key'])
+                if public_key_hash == utils.gen_id(key.publickey().exportKey()):
+                    # Hooray! Create new ledger and add new member
+                    if ledger is None:
+                        ledger = Ledger(key.publickey())
+                    ledger.add_peer(target[0])
+                    continue
+
+        utils.log_message("Not a valid response from {0}: {1}".format(target[0], results[target]))
 
 
 def leave_ledger():
@@ -149,7 +152,7 @@ class JoinLedgerThread(threading.Thread):
 # Generic TCP Message Passing Class
 class TCPMessageThread(threading.Thread):
 
-    def __init__(self, target, message, timeout=15):
+    def __init__(self, target, message, timeout=5):
         super(TCPMessageThread, self).__init__()
         with lock:
             utils.log_message("Sending Message to {0} {1}: {2}{3}".format(target[0], target[1], message[:10], '...'))
@@ -162,8 +165,7 @@ class TCPMessageThread(threading.Thread):
 
         try:
             s.connect(self._target)
-            s.send(self.message)
-            s.flush()
+            s.send(self.message.encode())
 
             # Store data in buffer until other side closes connection
             self.message = ''
@@ -173,7 +175,7 @@ class TCPMessageThread(threading.Thread):
                 s.settimeout(self._timeout)
 
                 while data:
-                    data = s.recvfrom(1024)
+                    data = s.recv(1024)
                     self.message += data
             except Exception as e:
                 s.close()
@@ -284,32 +286,39 @@ class TCPListener(threading.Thread):
             utils.log_message("Listening for ledger messages on port {0}".format(self._port))
 
         tcp_server_socket = socket(AF_INET, SOCK_STREAM)
-        tcp_server_socket.bind((self._ip, self._port))
-        tcp_server_socket.setblocking(False)
-        tcp_server_socket.listen()
 
-        # List for managing spawned threads
-        socket_threads = []
+        try:
+            tcp_server_socket.bind((self._ip, self._port))
+            tcp_server_socket.setblocking(False)
+            tcp_server_socket.listen()
 
-        # Non-blocking socket loop that can be interrupted with a signal/event
-        while True and not self.stop.is_set():
-            try:
-                client_socket, address = tcp_server_socket.accept()
-                client_socket.setblocking(True)
+            # List for managing spawned threads
+            socket_threads = []
 
-                # Spawn thread
-                client_thread = TCPConnectionThread(client_socket)
-                client_thread.start()
-                socket_threads.append(client_thread)
+            # Non-blocking socket loop that can be interrupted with a signal/event
+            while True and not self.stop.is_set():
+                try:
+                    client_socket, address = tcp_server_socket.accept()
+                    client_socket.setblocking(True)
 
-            except Exception as e:
-                continue
+                    # Spawn thread
+                    client_thread = TCPConnectionThread(client_socket)
+                    client_thread.start()
+                    socket_threads.append(client_thread)
 
-        tcp_server_socket.close()
+                except Exception as e:
+                    continue
 
-        # Clean up all the threads
-        for thread in socket_threads:
-            thread.join()
+            tcp_server_socket.close()
+
+            # Clean up all the threads
+            for thread in socket_threads:
+                thread.join()
+
+        except Exception as e:
+            print("Could not bind to port")
+
+
 
 
 # Generic inbound TCP connection handler
@@ -325,16 +334,16 @@ class TCPConnectionThread(threading.Thread):
     def run(self):
         global ledger
 
+        # Get message
         message = ''
         data = True
-
-        # Get message
         while data:
-            data = self._socket.recvfrom(1024)
-            message += data
+            data = self._socket.recv(1024)
+            message+=data.decode()
+
 
         with lock:
-            utils.log_message("Received message from {0}:\n{1}".format(socket.getsockname(), message))
+            utils.log_message("Received message from {0}:\n{1}".format(self._socket.getsockname(), message))
 
         decoded = json.loads(message)
 
@@ -356,7 +365,7 @@ class TCPConnectionThread(threading.Thread):
                 if 'message' in decoded and decoded['message'] == ledger.id:
 
                     response['status'] = 200
-                    response['public_key'] = ledger.pubkey.exportKey()
+                    response['public_key'] = ledger.pubkey.exportKey().decode()
 
         # No response, send error status
         else:
@@ -365,6 +374,5 @@ class TCPConnectionThread(threading.Thread):
 
         # Send response & close socket
         response_json = json.dumps(response)
-        self._socket.send(response_json)
-        self._socket.flush()
+        self._socket.send(response_json.encode())
         self._socket.close()
