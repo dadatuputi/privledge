@@ -1,12 +1,8 @@
 from cmd import Cmd
-from sshpubkeys import SSHKey
-
 from privledge import utils
 from privledge import settings
-from privledge.privledge_daemon import DiscoverLedgerThread
+from privledge import daemon
 
-import time
-import threading
 import socket
 from os import system
 
@@ -15,14 +11,16 @@ class PrivledgeShell(Cmd):
 
     results = dict()
 
-    def __init__(self, daemon):
-        super(PrivledgeShell, self).__init__()
 
-        self.daemon = daemon
+
+    def __init__(self):
+        super(PrivledgeShell, self).__init__()
 
         # Start the command loop - these need to be the last lines in the initializer
         self.prompt = '> '
         self.cmdloop('Welcome to Privledge Shell...')
+
+
 
     def do_init(self, args):
         """Initialize the ledger with a provided Root of Trust (RSA Public Key)"""
@@ -54,18 +52,14 @@ class PrivledgeShell(Cmd):
         # If we made it this far we have a valid key
         # Store generated key in our daemon for now
         try:
-            key_contents = key.publickey().exportKey('OpenSSH').decode()
-            ssh = SSHKey(key_contents, strict_mode=True)
-            ssh.parse()
-            key.pub = ssh
-            self.daemon.set_root(key)
+            daemon.create_ledger(key.publickey(), key)
+            hash = daemon.ledger.id
 
-            print("\nPublic Key Info:")
-            print("\tBits: {0}".format(len(key.publickey().exportKey('OpenSSH'))*8))
-            print("\tHash: {0}".format(ssh.hash_sha256()))
-            utils.log_message("Added key as a new Root of Trust", utils.Level.MEDIUM, True)
+            print("\nPublic Key Hash: {0}".format(hash))
+            utils.log_message("Added key ({0}) as a new Root of Trust".format(hash), utils.Level.MEDIUM, True)
         except Exception as err:
             print("Invalid key: "+ str(err))
+
 
 
     def do_debug(self, args):
@@ -81,10 +75,13 @@ class PrivledgeShell(Cmd):
         print("Debug mode is {}".format(settings.debug))
 
 
+
     def do_quit(self, args):
         """Quits the shell"""
         print("Quitting")
         raise SystemExit
+
+
 
     def do_list(self, args):
         """Attempt to find existing ledgers. Provide an ip address, otherwise the local broadcast will be used. You may force an update by entering 'update'"""
@@ -102,43 +99,56 @@ class PrivledgeShell(Cmd):
         ip = '<broadcast>'
 
         # Check for 'update' keyword
-        if len(args) > 0:
-            if args.lower().strip() != 'update':
-                ip = args
+        if args.lower().strip() != 'update':
+            ip = args
 
-                # Check for a valid IP
-                try:
-                    socket.inet_aton(ip)
-                except socket.error:
-                    print("You entered an invalid IP address")
-                    return
+            # Check for a valid IP
+            try:
+                socket.inet_aton(ip)
+            except socket.error:
+                print("You entered an invalid IP address")
+                return
 
-            # We need to start discovery process
-            print("Searching for available ledgers for {0} seconds...".format(settings.DISCOVERY_TIMEOUT))
-            self.results.clear()
+        self.results = daemon.discover_ledger(ip)
 
-            # Set up discover thread
-            found_event = threading.Event()
-            discover_thread = DiscoverLedgerThread(found_event, self.results, settings.DISCOVERY_TIMEOUT, ip)
-            discover_thread.start()
+        # Process results
+        self.display_ledger()
 
-            # Wait for discovery to finish
-            for i in range(1, settings.DISCOVERY_TIMEOUT):
-                if found_event.is_set():
-                    print('*', end='', flush=True)
-                    found_event.clear()
-                else:
-                    print('°', end='', flush=True)
-                time.sleep(1)
 
-            discover_thread.join()
 
-            # Process results
-            self.display_ledger()
+    def do_join(self, args):
+        """Join a ledger previously identified by the list command"""
+
+        # Check for no arguments
+        if len(args) == 0:
+            print("You must provide a ledger number")
+            return
+
+        # Check for a valid argument (is integer)
+        number = 0
+        try:
+            number = int(args)
+
+            # Check for valid argument (is valid ledger)
+            if number < 0 or number > len(self.results):
+                raise ValueError("Out of Bounds Error")
+        except ValueError as e:
+            print("{0}\nYou did not provide a valid number: '{1}'".format(e, args))
+            return
+
+        # Pass the daemon the hash and members
+        daemon.join_ledger(list(self.results.keys())[number], list(self.results.values())[number])
+
+
+
+    def do_leave(self, args):
+        """Leave the currently joined ledger"""
+        print(daemon.leave_ledger())
+
+
 
     def default(self, args):
         """Passes unrecognized commands through to the operating system"""
-
         system(args)
 
 
