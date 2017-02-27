@@ -161,18 +161,18 @@ class TCPMessageThread(threading.Thread):
         self._timeout = timeout
 
     def run(self):
-        s = socket(AF_INET, SOCK_STREAM)
+        tcp_message_socket = socket(AF_INET, SOCK_STREAM)
 
         try:
-            s.connect(self._target)
-            s.sendall(self.message.encode())
+            tcp_message_socket.connect(self._target)
+            tcp_message_socket.sendall(self.message.encode())
 
             # Store data in buffer until other side closes connection
             self.message = ''
             data = True
 
             while data:
-                data = s.recv(4096)
+                data = tcp_message_socket.recv(4096)
                 self.message += data.decode()
 
             with lock:
@@ -183,7 +183,7 @@ class TCPMessageThread(threading.Thread):
         except Exception as e:
             print("Could not connect to the specified ledger")
         finally:
-            s.close()
+            tcp_message_socket.close()
 
 
 
@@ -249,7 +249,6 @@ class UDPListener(threading.Thread):
 
         discovery_listener = socket(AF_INET, SOCK_DGRAM)
         discovery_listener.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-        discovery_listener.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
         discovery_listener.bind((self._ip, self._port))
         discovery_listener.setblocking(False)
 
@@ -276,20 +275,20 @@ class TCPListener(threading.Thread):
         self._port = port
         self._ip = ip
         self.stop = threading.Event()
+        self.stop.clear()
+
+        self.tcp_server_socket = socket(AF_INET, SOCK_STREAM)
+        self.tcp_server_socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+        self.tcp_server_socket.setblocking(False)
+        self.tcp_server_socket.bind((self._ip, self._port))
 
     def run(self):
         # Listen for ledger client connection requests
         with lock:
             utils.log_message("Listening for ledger messages on port {0}".format(self._port))
 
-        tcp_server_socket = socket(AF_INET, SOCK_STREAM)
-
         try:
-            tcp_server_socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-            tcp_server_socket.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
-            tcp_server_socket.bind((self._ip, self._port))
-            tcp_server_socket.setblocking(False)
-            tcp_server_socket.listen()
+            self.tcp_server_socket.listen(5)
 
             # List for managing spawned threads
             socket_threads = []
@@ -297,8 +296,7 @@ class TCPListener(threading.Thread):
             # Non-blocking socket loop that can be interrupted with a signal/event
             while True and not self.stop.is_set():
                 try:
-                    client_socket, address = tcp_server_socket.accept()
-                    client_socket.setblocking(True)
+                    client_socket, address = self.tcp_server_socket.accept()
 
                     # Spawn thread
                     client_thread = TCPConnectionThread(client_socket)
@@ -315,7 +313,7 @@ class TCPListener(threading.Thread):
         except Exception as e:
             print("Could not bind to port: {0}".format(e))
         finally:
-            tcp_server_socket.close()
+            self.tcp_server_socket.close()
 
 
 
@@ -339,7 +337,6 @@ class TCPConnectionThread(threading.Thread):
         while data:
             data = self._socket.recv(4096)
             message+=data.decode()
-
 
         with lock:
             utils.log_message("Received message from {0}:\n{1}".format(self._socket.getsockname(), message))
