@@ -231,8 +231,6 @@ class DiscoverLedgerThread(threading.Thread):
             s.close()
 
 
-
-
 class UDPListener(threading.Thread):
 
     def __init__(self, ip, port):
@@ -250,6 +248,8 @@ class UDPListener(threading.Thread):
             utils.log_message("Listening for ledger discovery queries on port {0}".format(self._port))
 
         discovery_listener = socket(AF_INET, SOCK_DGRAM)
+        discovery_listener.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+        discovery_listener.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
         discovery_listener.bind((self._ip, self._port))
         discovery_listener.setblocking(False)
 
@@ -285,6 +285,8 @@ class TCPListener(threading.Thread):
         tcp_server_socket = socket(AF_INET, SOCK_STREAM)
 
         try:
+            tcp_server_socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+            tcp_server_socket.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
             tcp_server_socket.bind((self._ip, self._port))
             tcp_server_socket.setblocking(False)
             tcp_server_socket.listen()
