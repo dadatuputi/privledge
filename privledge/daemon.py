@@ -19,18 +19,36 @@ _tcp_thread = None
 
 # Create a ledger with a new public and private key
 def create_ledger(new_public_key, new_private_key):
-    global ledger, _private_key, _udp_thread, _tcp_thread
+    global ledger, _private_key
     ledger = Ledger(new_public_key)
     _private_key = new_private_key
 
-    # Spawn UDP Discovery Listener thread
-    _udp_thread = UDPListener(settings.BIND_IP, settings.BIND_PORT)
-    _udp_thread.start()
+    # Start Listeners
+    ledger_listeners(True)
 
-    # Spawn TCP Listener thread
-    _tcp_thread = TCPListener(settings.BIND_IP, settings.BIND_PORT)
-    _tcp_thread.start()
 
+def ledger_listeners(start):
+    global _udp_thread, _tcp_thread
+
+    if start:
+        # Spawn UDP Discovery Listener thread
+        _udp_thread = UDPListener(settings.BIND_IP, settings.BIND_PORT)
+        _udp_thread.start()
+
+        # Spawn TCP Listener thread
+        _tcp_thread = TCPListener(settings.BIND_IP, settings.BIND_PORT)
+        _tcp_thread.start()
+
+    else:
+        # Kill udp listener thread
+        _udp_thread.stop.set()
+        _udp_thread.join()
+        _udp_thread = None
+
+        # Kill tcp listener thread
+        _tcp_thread.stop.set()
+        _tcp_thread.join()
+        _tcp_thread = None
 
 
 # Join a ledger with a specified public key
@@ -38,9 +56,9 @@ def join_ledger(public_key_hash, members):
     global ledger
 
     # Check to make sure we aren't part of a ledger yet
-    # if ledger is not None:
-    #     print("You are already a member of a ledger")
-    #     return
+    if ledger is not None:
+        print("You are already a member of a ledger")
+        return
 
     join_thread = JoinLedgerThread(public_key_hash, members)
     join_thread.start()
@@ -62,13 +80,15 @@ def join_ledger(public_key_hash, members):
             # If the message is properly formatted, try to parse the message as a key
             if 'status' in decoded and decoded['status'] == 200 and 'public_key' in decoded:
                 key = utils.get_key(decoded['public_key'])
-                key_exported = key.publickey().exportKey()
-                key_hash = utils.gen_id(key_exported)
-                #if public_key_hash == utils.gen_id(key.publickey().exportKey()):
+                key_hash = utils.gen_id(key.publickey().exportKey())
                 if public_key_hash == key_hash:
                     # Hooray! Create new ledger and add new member
                     if ledger is None:
                         ledger = Ledger(key.publickey())
+                        utils.log_message("Joined ledger {0}".format(public_key_hash))
+
+                        # Start Listeners
+                        ledger_listeners(True)
                     ledger.add_peer(target[0])
                     continue
 
@@ -82,12 +102,8 @@ def leave_ledger():
         message = "Left ledger {0}".format(ledger.id)
         ledger = None
 
-        # Kill udp listener thread
-        _udp_thread.stop.set()
-        _udp_thread.join()
-        _udp_thread = None
-
-        # Kill tcp listener thread
+        # Kill the listners
+        ledger_listeners(False)
 
     else:
         message = "Not a member of a ledger, cannot leave"
@@ -138,7 +154,7 @@ class JoinLedgerThread(threading.Thread):
         for member in self._members:
             with lock:
                 utils.log_message("Spawning TCP Connection Thread to {0}:{1}".format(member[0], member[1]))
-            join_message = {'request': 'join', 'message': self._root_hash.decode()}
+            join_message = {'request': 'join', 'message': self._root_hash}
             join_message = json.dumps(join_message)
             thread = TCPMessageThread(member, join_message)
             thread.start()
