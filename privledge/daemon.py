@@ -165,7 +165,7 @@ class TCPMessageThread(threading.Thread):
 
         try:
             tcp_message_socket.connect(self._target)
-            tcp_message_socket.sendall(len(self.message)+self.message.encode())
+            tcp_message_socket.sendall((str(len(self.message)).zfill(4)+self.message).encode())
 
             # Store data in buffer until other side closes connection
             self.message = ''
@@ -331,6 +331,8 @@ class TCPConnectionThread(threading.Thread):
     def run(self):
         global ledger
 
+        sender_address = self._socket.getsockname()
+
         # Get message
         message = ''
         message_size = None
@@ -346,14 +348,14 @@ class TCPConnectionThread(threading.Thread):
                 else:
                     break
         except ValueError as e:
-            utils.log_message('Received invalid packet from {0}'.format(self._socket.getsockname()))
+            utils.log_message('Received invalid packet from {0}'.format(sender_address))
             return
         finally:
             self._socket.close()
 
-
         with lock:
-            utils.log_message("Received message from {0}:\n{1}".format(self._socket.getsockname(), message))
+            utils.log_message("Received message from {0}:\n{1}".format(sender_address, message))
+
 
         decoded = json.loads(message)
 
