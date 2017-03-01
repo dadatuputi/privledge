@@ -62,7 +62,10 @@ def join_ledger(public_key_hash, members):
             # If the message is properly formatted, try to parse the message as a key
             if 'status' in decoded and decoded['status'] == 200 and 'public_key' in decoded:
                 key = utils.get_key(decoded['public_key'])
-                if public_key_hash == utils.gen_id(key.publickey().exportKey()):
+                key_exported = key.publickey().exportKey()
+                key_hash = utils.gen_id(key_exported)
+                #if public_key_hash == utils.gen_id(key.publickey().exportKey()):
+                if public_key_hash == key_hash:
                     # Hooray! Create new ledger and add new member
                     if ledger is None:
                         ledger = Ledger(key.publickey())
@@ -94,11 +97,10 @@ def leave_ledger():
 def discover_ledger(ip, timeout = settings.DISCOVERY_TIMEOUT):
     # We need to start discovery process
     print("Searching for available ledgers for {0} seconds...".format(timeout))
-    results = dict()
 
     # Set up discover thread
     found_event = threading.Event()
-    discover_thread = DiscoverLedgerThread(found_event, results, timeout, ip)
+    discover_thread = DiscoverLedgerThread(found_event, timeout, ip)
     discover_thread.start()
 
     # Wait for discovery to finish
@@ -114,7 +116,7 @@ def discover_ledger(ip, timeout = settings.DISCOVERY_TIMEOUT):
     discover_thread.join()
 
     # Return found ledgers
-    return results
+    return discover_thread.results
 
 
 # Join a specified ledger
@@ -162,12 +164,11 @@ class TCPMessageThread(threading.Thread):
 
     def run(self):
         tcp_message_socket = socket(AF_INET, SOCK_STREAM)
-
+        tcp_message_socket.settimeout(self._timeout)
 
         try:
             tcp_message_socket.connect(self._target)
             tcp_message_socket.sendall(utils.append_len(self.message).encode())
-
 
             # Get response
             self.message = ''
@@ -175,18 +176,18 @@ class TCPMessageThread(threading.Thread):
 
             while True:
                 if message_size is None:
-                    data = self.tcp_message_socket.recv(4)
+                    data = tcp_message_socket.recv(4)
                     # Convert first 4 bytes to an integer
                     message_size = int(data.decode())
                 elif len(self.message) < message_size:
-                    data = self.tcp_message_socket.recv(4096)
+                    data = tcp_message_socket.recv(4096)
                     self.message += data.decode()
                 else:
                     break
 
         except ValueError as e:
             with lock:
-                utils.log_message('Received invalid response from {0}'.format(self.tcp_message_socket.getsockname()))
+                utils.log_message('Received invalid response from {0}'.format(tcp_message_socket.getsockname()))
 
         except Exception as e:
             with lock:
@@ -206,12 +207,12 @@ class TCPMessageThread(threading.Thread):
 # Thread for discovering Ledgers
 class DiscoverLedgerThread(threading.Thread):
 
-    def __init__(self, found_event, results, timeout=10, ip='<broadcast>', port=2525):
+    def __init__(self, found_event, timeout=10, ip='<broadcast>', port=2525):
         super(DiscoverLedgerThread, self).__init__()
         with lock:
             utils.log_message("Starting Ledger Discovery Thread")
         self._found_event = found_event
-        self._results = results
+        self.results = dict()
         self._timeout = timeout
         self._ip = ip
         self._port = port
@@ -227,17 +228,18 @@ class DiscoverLedgerThread(threading.Thread):
             s.settimeout(self._timeout)
             while True:
                 data, address = s.recvfrom(1024)
+                hash = data.decode()
 
                 with lock:
-                    utils.log_message("Discovered ledger {0} at {1}".format(data, address))
+                    utils.log_message("Discovered ledger {0} at {1}".format(hash, address))
 
                 # Received response
                 # Is the hash already in our list?
-                if data not in self._results:
+                if hash not in self.results:
                     # If hash isn't in the list, create a new set and add address to it
-                    self._results[data] = set()
+                    self.results[hash] = set()
                 # Since there's already a set for our hash, we add to it
-                self._results[data].add(address)
+                self.results[hash].add(address)
 
                 self._found_event.set()
         except Exception as e:
