@@ -163,25 +163,40 @@ class TCPMessageThread(threading.Thread):
     def run(self):
         tcp_message_socket = socket(AF_INET, SOCK_STREAM)
 
+
         try:
             tcp_message_socket.connect(self._target)
             tcp_message_socket.sendall(utils.append_len(self.message).encode())
 
-            # Store data in buffer until other side closes connection
+
+            # Get response
             self.message = ''
-            data = True
+            message_size = None
 
-            while data:
-                data = tcp_message_socket.recv(4096)
-                self.message += data.decode()
+            while True:
+                if message_size is None:
+                    data = self.tcp_message_socket.recv(4)
+                    # Convert first 4 bytes to an integer
+                    message_size = int(data.decode())
+                elif len(self.message) < message_size:
+                    data = self.tcp_message_socket.recv(4096)
+                    self.message += data.decode()
+                else:
+                    break
 
+        except ValueError as e:
             with lock:
-                utils.log_message(
-                    "Received Response from {0} {1}: {2}{3}".format(self._target[0], self._target[1], self.message[:10],
-                                                                    '...'))
+                utils.log_message('Received invalid response from {0}'.format(self.tcp_message_socket.getsockname()))
 
         except Exception as e:
-            print("Could not connect to the specified ledger")
+            with lock:
+                utils.log_message('Could not send or receive message to or from the ledger at {0}:\n{1}\n{2}'.format(tcp_message_socket.getsockname()[0], self.message, e), force=True)
+
+        else:
+            with lock:
+                utils.log_message(
+                    "Received Response from {0} {1}: {2}{3}".format(self._target[0], self._target[1], self.message[:10],'...'))
+
         finally:
             tcp_message_socket.close()
 
@@ -396,5 +411,5 @@ class TCPConnectionThread(threading.Thread):
             utils.log_message("Responded with message to {0}:\n{1}".format(self._socket.getsockname(),response_json))
         self._socket.sendall(utils.append_len(response_json).encode())
         self._socket.shutdown(SHUT_WR)
-        self._socket.recv()
+        self._socket.recv(4096)
         self._socket.close()
