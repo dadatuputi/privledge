@@ -333,10 +333,24 @@ class TCPConnectionThread(threading.Thread):
 
         # Get message
         message = ''
-        data = True
-        while data:
-            data = self._socket.recv(4096)
-            message+=data.decode()
+        message_size = None
+        try:
+            while True:
+                if message_size is None:
+                    data = self._socket.recv(4)
+                    # Convert first 4 bytes to an integer
+                    message_size = int(data.decode())
+                elif len(message) < message_size:
+                    data = self._socket.recv(4096)
+                    message+=data.decode()
+                else:
+                    break
+        except ValueError as e:
+            utils.log_message('Received invalid packet from {0}'.format(self._socket.getsockname()))
+            return
+        finally:
+            self._socket.close()
+
 
         with lock:
             utils.log_message("Received message from {0}:\n{1}".format(self._socket.getsockname(), message))
@@ -371,5 +385,7 @@ class TCPConnectionThread(threading.Thread):
         response_json = json.dumps(response)
         with lock:
             utils.log_message("Responded with message to {0}:\n{1}".format(self._socket.getsockname(),response_json))
-        self._socket.sendall(response_json.encode())
+        self._socket.sendall(len(response_json)+response_json.encode())
+        self._socket.shutdown()
+        self._socket.recv()
         self._socket.close()
