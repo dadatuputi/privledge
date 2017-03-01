@@ -374,7 +374,7 @@ class TCPConnectionThread(threading.Thread):
 
                     response['status'] = 200
                     response['public_key'] = ledger.pubkey.exportKey().decode()
-                    self._respond(self._socket, response)
+                    self._respond(response)
                 else:
                     self._respond_error()
             else:
@@ -387,7 +387,7 @@ class TCPConnectionThread(threading.Thread):
 
     def _respond_error(self):
         response = {'status': 404}
-        self._respond(socket, response)
+        self._respond(response)
 
     def _respond(self, message):
         response_json = json.dumps(message)
