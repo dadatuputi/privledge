@@ -165,7 +165,7 @@ class TCPMessageThread(threading.Thread):
 
         try:
             tcp_message_socket.connect(self._target)
-            tcp_message_socket.sendall((str(len(self.message)).zfill(4)+self.message).encode())
+            tcp_message_socket.sendall(utils.append_len(self.message).encode())
 
             # Store data in buffer until other side closes connection
             self.message = ''
@@ -394,7 +394,7 @@ class TCPConnectionThread(threading.Thread):
 
         with lock:
             utils.log_message("Responded with message to {0}:\n{1}".format(self._socket.getsockname(),response_json))
-        self._socket.sendall(len(response_json)+response_json.encode())
+        self._socket.sendall(utils.append_len(response_json).encode())
         self._socket.shutdown()
         self._socket.recv()
         self._socket.close()
