@@ -395,6 +395,6 @@ class TCPConnectionThread(threading.Thread):
         with lock:
             utils.log_message("Responded with message to {0}:\n{1}".format(self._socket.getsockname(),response_json))
         self._socket.sendall(utils.append_len(response_json).encode())
-        self._socket.shutdown()
+        self._socket.shutdown(SHUT_WR)
         self._socket.recv()
         self._socket.close()
