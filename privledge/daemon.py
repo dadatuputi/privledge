@@ -165,7 +165,7 @@ class TCPMessageThread(threading.Thread):
 
         try:
             tcp_message_socket.connect(self._target)
-            tcp_message_socket.sendall(self.message.encode())
+            tcp_message_socket.sendall(len(self.message)+self.message.encode())
 
             # Store data in buffer until other side closes connection
             self.message = ''
