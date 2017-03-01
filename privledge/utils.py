@@ -82,6 +82,7 @@ def generate_openssh_key(save=False, filename='id_rsa', location='', keylength=2
 def gen_id(key):
     return hashlib.sha1(key).hexdigest()
 
-
+def append_len(message):
+    return str(len(message)).zfill(4) + message
 
 
