@@ -393,7 +393,7 @@ class TCPConnectionThread(threading.Thread):
         response_json = json.dumps(message)
 
         with lock:
-            utils.log_message("Responded with message to {0}:\n{1}".format(socket.getsockname(),response_json))
+            utils.log_message("Responded with message to {0}:\n{1}".format(self._socket.getsockname(),response_json))
         self._socket.sendall(len(response_json)+response_json.encode())
         self._socket.shutdown()
         self._socket.recv()
