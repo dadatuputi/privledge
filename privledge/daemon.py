@@ -331,8 +331,6 @@ class TCPConnectionThread(threading.Thread):
     def run(self):
         global ledger
 
-        sender_address = self._socket.getsockname()
-
         # Get message
         message = ''
         message_size = None
@@ -348,13 +346,11 @@ class TCPConnectionThread(threading.Thread):
                 else:
                     break
         except ValueError as e:
-            utils.log_message('Received invalid packet from {0}'.format(sender_address))
+            utils.log_message('Received invalid packet from {0}'.format(self._socket.getsockname()))
             return
-        finally:
-            self._socket.close()
 
         with lock:
-            utils.log_message("Received message from {0}:\n{1}".format(sender_address, message))
+            utils.log_message("Received message from {0}:\n{1}".format(self._socket.getsockname(), message))
 
 
         decoded = json.loads(message)
@@ -378,15 +374,26 @@ class TCPConnectionThread(threading.Thread):
 
                     response['status'] = 200
                     response['public_key'] = ledger.pubkey.exportKey().decode()
+                    self._respond(self._socket, response)
+                else:
+                    self._respond_error()
+            else:
+                self._respond_error()
 
         # No response, send error status
         else:
-            response['status'] = 404
+            self._respond_error()
 
-        # Send response & close socket
-        response_json = json.dumps(response)
+
+    def _respond_error(self):
+        response = {'status': 404}
+        self._respond(socket, response)
+
+    def _respond(self, message):
+        response_json = json.dumps(message)
+
         with lock:
-            utils.log_message("Responded with message to {0}:\n{1}".format(self._socket.getsockname(),response_json))
+            utils.log_message("Responded with message to {0}:\n{1}".format(socket.getsockname(),response_json))
         self._socket.sendall(len(response_json)+response_json.encode())
         self._socket.shutdown()
         self._socket.recv()
