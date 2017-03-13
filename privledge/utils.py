@@ -2,7 +2,7 @@ from termcolor import cprint
 from enum import Enum
 from privledge import settings
 from Crypto.PublicKey import RSA
-import hashlib
+from Crypto.Hash import SHA
 
 import os.path
 from os import chmod
@@ -79,10 +79,13 @@ def generate_openssh_key(save=False, filename='id_rsa', location='', keylength=2
 
     return key
 
-def gen_id(key):
-    return hashlib.sha1(key).hexdigest()
+def gen_hash(message):
+    h = SHA.new()
+    h.update(message)
+    return h.hexdigest()
+
 
 def append_len(message):
-    return str(len(message)).zfill(4) + message
+    return str(len(message)).zfill(settings.MSG_SIZE_BYTES) + message
 
 
