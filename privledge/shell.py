@@ -51,14 +51,14 @@ class PrivledgeShell(Cmd):
 
         # If we made it this far we have a valid key
         # Store generated key in our daemon for now
-        try:
-            daemon.create_ledger(key.publickey(), key)
-            hash = daemon.ledger.id
+        #try:
+        daemon.create_ledger(key.publickey().exportKey(), key.exportKey())
+        hash = daemon.ledger.id
 
-            print("\nPublic Key Hash: {0}".format(hash))
-            utils.log_message("Added key ({0}) as a new Root of Trust".format(hash), utils.Level.MEDIUM, True)
-        except Exception as err:
-            print("Invalid key: "+ str(err))
+        print("\nPublic Key Hash: {0}".format(hash))
+        utils.log_message("Added key ({0}) as a new Root of Trust".format(hash), utils.Level.MEDIUM, True)
+        #except Exception as err:
+        #    print("Invalid key: "+ str(err))
 
 
 
@@ -90,7 +90,7 @@ class PrivledgeShell(Cmd):
         if len(args) == 0:
             if len(self.results) > 0:
                 # Look for cached ledger list
-                utils.log_message("Using cached results, use 'list update' to force an update.", force=True)
+                utils.log_message("Using cached results; use 'list update' to force an update.", force=True)
                 self.display_ledger()
                 return
             else:
@@ -110,7 +110,7 @@ class PrivledgeShell(Cmd):
                 print("You entered an invalid IP address")
                 return
 
-        self.results = daemon.discover_ledger(ip)
+        self.results = daemon.discover_ledgers(ip)
 
         # Process results
         self.display_ledger()
@@ -146,11 +146,24 @@ class PrivledgeShell(Cmd):
         print(daemon.leave_ledger())
 
 
+    def do_status(self, args):
+        """Show current ledger status"""
+        if daemon.ledger is not None:
+            # Print ledger status
+            print("You are a member of ledger {0} with {1} peers.".format(daemon.ledger.id,
+                                                                                len(daemon.peers)))
+            # Detailed
+            if args.lower() == 'detail':
+                print("\nRoot of Trust:")
+                print(daemon.ledger.root)
+        else:
+            # Print message if no ledger
+            print("You are not a member of a ledger")
+
 
     def default(self, args):
         """Passes unrecognized commands through to the operating system"""
         system(args)
-
 
 
     def display_ledger(self):
