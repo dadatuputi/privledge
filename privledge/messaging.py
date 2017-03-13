@@ -49,9 +49,6 @@ class TCPListener(threading.Thread):
         self.stop.clear()
 
         self.tcp_server_socket = socket(AF_INET, SOCK_STREAM)
-        self.tcp_server_socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-        self.tcp_server_socket.setblocking(False)
-        self.tcp_server_socket.bind((self._ip, self._port))
 
     def run(self):
         # Listen for ledger client connection requests
@@ -59,6 +56,9 @@ class TCPListener(threading.Thread):
             utils.log_message("Listening for ledger messages on port {0}".format(self._port))
 
         try:
+            self.tcp_server_socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+            self.tcp_server_socket.setblocking(False)
+            self.tcp_server_socket.bind((self._ip, self._port))
             self.tcp_server_socket.listen(5)
 
             # List for managing spawned threads
@@ -150,7 +150,6 @@ class TCPConnectionThread(threading.Thread):
         self._socket = socket
 
     def run(self):
-        global ledger
 
         # Get message
         message = ''
@@ -173,48 +172,27 @@ class TCPConnectionThread(threading.Thread):
         with lock:
             utils.log_message("Received message from {0}:\n{1}".format(self._socket.getsockname(), message))
 
-        decoded = json.loads(message)
+        message = json.loads(message, object_hook=message_decoder)
 
-        '''
-        Look for a json encoded string in this format:
-            request (join/add/etc)
-            message (key/hash/etc)
-        '''
-
-        response = dict()
-
-        # Process different requests
-        if 'request' in decoded:
-
-            # Join request
-            if decoded['request'] == 'join':
-
-                # Does the hash match ours?
-                if 'message' in decoded and decoded['message'] == ledger.id:
-
-                    response['status'] = 200
-                    response['public_key'] = ledger.pubkey.exportKey().decode()
-                    self._respond(response)
-                else:
-                    self._respond_error()
+        if message.type == settings.MSG_TYPE_JOIN:
+            if message.message == daemon.ledger.id:
+                response = Message(settings.MSG_TYPE_SUCCESS, daemon.ledger.pubkey.exportKey().decode()).prep_send()
+                self._respond(response)
             else:
                 self._respond_error()
-
         # No response, send error status
         else:
             self._respond_error()
 
     def _respond_error(self):
-        response = {'status': 404}
+        response = Message(settings.MSG_TYPE_FAILURE).prep_send()
         self._respond(response)
 
     def _respond(self, message):
-        response_json = json.dumps(message)
-
         with lock:
             utils.log_message(
-                "Responded with message to {0}:\n{1}".format(self._socket.getsockname(), response_json))
-        self._socket.sendall(utils.append_len(response_json).encode())
+                "Responded with message to {0}:\n{1}".format(self._socket.getsockname(), message))
+        self._socket.sendall(utils.append_len(message).encode())
         self._socket.shutdown(SHUT_WR)
         self._socket.recv(4096)
         self._socket.close()
@@ -260,12 +238,14 @@ class UDPListener(threading.Thread):
                     # Discovery Message
                     with lock:
                         utils.log_message("Received discovery inquiry from {0}, responding...".format(addr))
-                    discovery_socket.sendto(ledger.id.encode(), addr)
+                    response = Message('200', ledger.id.encode()).prep_send()
+                    discovery_socket.sendto(response, addr)
+
                 elif message.type == settings.MSG_TYPE_HB:
                     # Heartbeat Message
                     with lock :
                         utils.log_message("Received heartbeat from {0}".format(addr))
-                    daemon.ledger[addr] = datetime.now()
+                    daemon.peers[addr] = datetime.now()
 
         discovery_socket.close()
 
@@ -286,14 +266,14 @@ class UDPHeartbeat(threading.Thread):
         # Loop through the list of peers and send heartbeat messages
         while True and not self.stop.is_set():
 
-            for target,last_beat in daemon.ledger.items():
+            for target,last_beat in daemon.peers.items():
 
                 if (last_beat + timedelta(milliseconds=settings.MSG_HB_TTL)) < datetime.now():
                     # Check for dead peers
                     with lock:
                         utils.log_message("Removing dead peer {0}".format(target))
 
-                    del daemon.ledger[target]
+                    del daemon.peers[target]
                 else:
                     # Send heartbeat with root id to peers
                     s = socket(AF_INET, SOCK_DGRAM)

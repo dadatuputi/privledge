@@ -75,7 +75,7 @@ def join_ledger(public_key_hash, member):
         return
 
     utils.log_message("Spawning TCP Connection Thread to {0}:{1}".format(member[0], member[1]))
-    join_message = Message('join', public_key_hash)
+    join_message = Message('join', public_key_hash).prep_send()
     thread = TCPMessageThread(member, join_message)
     thread.start()
     thread.join()
