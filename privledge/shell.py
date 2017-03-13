@@ -182,5 +182,5 @@ class PrivledgeShell(Cmd):
                 print("{0} | {4}: ({1} members) {2} {3}".format(i, len(self.results[ledger]), ledger, member, list(self.results[ledger])[0][0]))
 
 
-def emptyline(self):
-    pass
+    def emptyline(self):
+        pass
