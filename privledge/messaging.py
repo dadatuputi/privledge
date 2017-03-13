@@ -238,7 +238,7 @@ class UDPListener(threading.Thread):
                     # Discovery Message
                     with lock:
                         utils.log_message("Received discovery inquiry from {0}, responding...".format(addr))
-                    response = Message('200', ledger.id.encode()).prep_send()
+                    response = Message('200', daemon.ledger.id.encode()).prep_send()
                     discovery_socket.sendto(response, addr)
 
                 elif message.type == settings.MSG_TYPE_HB:
