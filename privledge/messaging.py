@@ -296,7 +296,7 @@ class UDPListener(threading.Thread):
                     # Heartbeat Message
                     with lock:
                         utils.log_message("Received heartbeat from {0}".format(addr))
-                    daemon.peers[addr] = datetime.now()
+                    daemon.peers[(addr[0], settings.BIND_PORT)] = datetime.now()
 
         discovery_socket.close()
 
