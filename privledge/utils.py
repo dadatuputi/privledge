@@ -5,6 +5,7 @@ from Crypto.PublicKey import RSA
 from Crypto.Hash import SHA
 
 import os.path
+import json
 from os import chmod
 
 
@@ -88,4 +89,13 @@ def gen_hash(message):
 def append_len(message):
     return str(len(message)).zfill(settings.MSG_SIZE_BYTES) + message
 
+
+class ComplexEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, bytes):          # Handle bytes
+            return obj.decode('ascii')
+        if hasattr(obj, 'reprJSON'):        # Use object reprJSON method
+            return obj.reprJSON()
+        else:
+            return json.JSONEncoder.default(self, obj)
 

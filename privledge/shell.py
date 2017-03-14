@@ -4,6 +4,7 @@ from privledge import settings
 from privledge import daemon
 
 import socket
+import json
 from os import system
 
 
@@ -160,6 +161,10 @@ class PrivledgeShell(Cmd):
             # Print message if no ledger
             print("You are not a member of a ledger")
 
+    def do_ledger(self, args):
+        """Print the ledger"""
+        listything = daemon.ledger.to_list()
+        print(json.dumps(listything, cls=utils.ComplexEncoder))
 
     def default(self, args):
         """Passes unrecognized commands through to the operating system"""
