@@ -237,8 +237,8 @@ class UDPListener(threading.Thread):
                     # Discovery Message
                     with lock:
                         utils.log_message("Received discovery inquiry from {0}, responding...".format(addr))
-                    response = Message('200', daemon.ledger.id.encode()).__repr__()
-                    discovery_socket.sendto(response, addr)
+                    response = Message(settings.MSG_TYPE_SUCCESS, daemon.ledger.id).__repr__()
+                    discovery_socket.sendto(response.encode(), addr)
 
                 elif message.type == settings.MSG_TYPE_HB:
                     # Heartbeat Message
