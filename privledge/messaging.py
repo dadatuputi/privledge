@@ -23,7 +23,7 @@ class Message():
     def __repr__(self):
         return json.dumps(self.__dict__)
 
-    def prep_send(self):
+    def prep_tcp(self):
         return utils.append_len(self.__repr__())
 
 def message_decoder(obj):
@@ -176,7 +176,7 @@ class TCPConnectionThread(threading.Thread):
 
         if message.type == settings.MSG_TYPE_JOIN:
             if message.message == daemon.ledger.id:
-                response = Message(settings.MSG_TYPE_SUCCESS, daemon.ledger.pubkey.exportKey().decode()).prep_send()
+                response = Message(settings.MSG_TYPE_SUCCESS, daemon.ledger.pubkey.exportKey().decode()).prep_tcp()
                 self._respond(response)
             else:
                 self._respond_error()
@@ -185,7 +185,7 @@ class TCPConnectionThread(threading.Thread):
             self._respond_error()
 
     def _respond_error(self):
-        response = Message(settings.MSG_TYPE_FAILURE).prep_send()
+        response = Message(settings.MSG_TYPE_FAILURE).prep_tcp()
         self._respond(response)
 
     def _respond(self, message):
@@ -231,14 +231,13 @@ class UDPListener(threading.Thread):
             except OSError as e:
                 continue
             else:
-                message = data.decode()
-                message = json.loads(message, object_hook=message_decoder)
+                message = json.loads(data.decode(), object_hook=message_decoder)
                 # Decode Message Type
                 if message.type == settings.MSG_TYPE_DISCOVER:
                     # Discovery Message
                     with lock:
                         utils.log_message("Received discovery inquiry from {0}, responding...".format(addr))
-                    response = Message('200', daemon.ledger.id.encode()).prep_send()
+                    response = Message('200', daemon.ledger.id.encode()).__repr__()
                     discovery_socket.sendto(response, addr)
 
                 elif message.type == settings.MSG_TYPE_HB:
@@ -277,7 +276,7 @@ class UDPHeartbeat(threading.Thread):
                 else:
                     # Send heartbeat with root id to peers
                     s = socket(AF_INET, SOCK_DGRAM)
-                    message = Message(settings.MSG_TYPE_HB, daemon.ledger.id).prep_send()
+                    message = Message(settings.MSG_TYPE_HB, daemon.ledger.id).__repr__()
 
                     s.sendto(message, target)
                     utils.log_message("Heartbeat sent to {0}".format(target))
