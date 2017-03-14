@@ -75,7 +75,7 @@ def join_ledger(public_key_hash, member):
         return
 
     utils.log_message("Spawning TCP Connection Thread to {0}:{1}".format(member[0], member[1]))
-    join_message = Message('join', public_key_hash).prep_send()
+    join_message = Message('join', public_key_hash).prep_tcp()
     thread = TCPMessageThread(member, join_message)
     thread.start()
     thread.join()
@@ -136,7 +136,7 @@ def discover_ledgers(ip='<broadcast>', port=settings.BIND_PORT, timeout = settin
     s = socket(AF_INET, SOCK_DGRAM)
     s.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
     s.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
-    message = Message(settings.MSG_TYPE_DISCOVER).prep_send()
+    message = Message(settings.MSG_TYPE_DISCOVER).__repr__()
     s.sendto(message.encode(), (ip, port))
     try:
         # Listen for responses for 10 seconds
