@@ -3,6 +3,7 @@ from privledge import utils
 from privledge import settings
 from privledge import daemon
 from privledge import block
+from privledge import ledger
 
 import threading
 import json
@@ -37,6 +38,40 @@ def message_decoder(obj):
     elif 'signature' in obj and 'pubkey' in obj:
         return block.Block(obj['type'], obj['predecessor'], obj['pubkey'], obj['pubkey_hash'], obj['signature'], obj['signatory_hash'])
     return obj
+
+
+def ledger_sync(target, block_hash=None):
+    utils.log_message("Requesting ledger from {0}".format(target))
+
+    ledger_message = Message(settings.MSG_TYPE_LEDGER, block_hash).prep_tcp()
+    thread = TCPMessageThread(target, ledger_message)
+    thread.start()
+    thread.join()
+
+    message = json.loads(thread.message, object_hook=message_decoder)
+
+    # Add received blocks to our ledger
+    if daemon.ledger is None:
+        daemon.ledger = ledger.Ledger()
+
+    for block in message:
+        daemon.ledger.append(block)
+
+
+def peer_sync(target):
+    utils.log_message("Requesting peers from {0}".format(target))
+
+    ledger_message = Message(settings.MSG_TYPE_PEER, None).prep_tcp()
+    thread = TCPMessageThread(target, ledger_message)
+    thread.start()
+    thread.join()
+
+    message = json.loads(thread.message, object_hook=message_decoder)
+
+    #for peer in message:
+    #    daemon.peers.
+
+    #peers[member] = datetime.now()
 
 
 
@@ -191,7 +226,11 @@ class TCPConnectionThread(threading.Thread):
                 return
         elif message.type == settings.MSG_TYPE_PEER:
             # Respond with list of peers
-            pass
+            peer_list = list(daemon.peers.keys())
+            response = Message(settings.MSG_TYPE_SUCCESS, peer_list).prep_tcp()
+            self._respond(response)
+            return
+
         elif message.type == settings.MSG_TYPE_LEDGER:
             # Respond with the ledger
             ledger_list = daemon.ledger.to_list(message.message)
@@ -202,10 +241,12 @@ class TCPConnectionThread(threading.Thread):
 
             response = Message(settings.MSG_TYPE_SUCCESS, ledger_list).prep_tcp()
             self._respond(response)
+            return
 
         # No response, send error status
         else:
             self._respond_error()
+            return
 
     def _respond_error(self):
         response = Message(settings.MSG_TYPE_FAILURE).prep_tcp()

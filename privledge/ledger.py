@@ -8,12 +8,10 @@ import json
 class Ledger():
 
 
-    def __init__(self, root_block):
-        self.root = root_block
-        self.root.previous = None
-
+    def __init__(self):
         self.len = 0
-        self.tail = root_block
+        self.tail = None
+        self.root = None
 
 
 
@@ -36,20 +34,27 @@ class Ledger():
 
     def append(self, block):
 
-        # Ensure the hash is correct
-        if not block.predecessor == self.tail.hash:
-            raise ValueError('Predecessor hash does not match the last accepted block', block.predecessor,
-                             self.tail.hash)
+        # Adding root?
+        if block.predecessor is None and self.root is None:
+            self.root = block
 
-        # Find the signatory key in our ledger
-        signatory = self.find_key(block.signatory_hash)
-        signatory_key = RSA.importKey(signatory)
+        # Do some checks to make sure block is correctly formed
+        else:
 
-        # Verify the signature is valid
-        h = SHA.new(block.body)
-        verifier = PKCS1_PSS.new(signatory_key)
-        if not verifier.verify(h, block.signature):
-            raise ValueError('The block signature is not valid', block.signature, signatory)
+            # Ensure the hash is correct
+            if not block.predecessor == self.tail.hash:
+                raise ValueError('Predecessor hash does not match the last accepted block', block.predecessor,
+                                 self.tail.hash)
+
+            # Find the signatory key in our ledger
+            signatory = self.find_key(block.signatory_hash)
+            signatory_key = RSA.importKey(signatory)
+
+            # Verify the signature is valid
+            h = SHA.new(block.body)
+            verifier = PKCS1_PSS.new(signatory_key)
+            if not verifier.verify(h, block.signature):
+                raise ValueError('The block signature is not valid', block.signature, signatory)
 
         # Hash is correct, Signatory Exists, Signature is Valid: Add to ledger!
         block.previous = self.tail
