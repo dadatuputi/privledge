@@ -15,7 +15,7 @@ class BlockType(Enum):
     trusted = 1
     member = 2
 
-    def reprJSON(self):
+    def repr_json(self):
         return self.name
 
 
@@ -45,7 +45,6 @@ class Block():
         return json.dumps(body, cls=utils.ComplexEncoder, sort_keys=True)
 
 
-
     def sign(self, privkey, pubkey_hash):
         key = RSA.importKey(privkey)
         body = self.body
@@ -55,7 +54,6 @@ class Block():
         self.signatory_hash = pubkey_hash
 
 
-
     def __str__(self):
         return '\tType: {0}\n\tKey Hash: {1}\n\tSignatory Hash: {2}'.format(self.blocktype.name, self.pubkey_hash, self.signatory_hash)
 
@@ -63,6 +61,5 @@ class Block():
         return json.dumps(self.__dict__, cls=utils.ComplexEncoder, sort_keys=True)
 
 
-
-    def reprJSON(self):
+    def repr_json(self):
         return self.__dict__

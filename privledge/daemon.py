@@ -1,11 +1,14 @@
-""" A daemon thread manager that receives input from the command line
+""" A daemon thread manager that can be controlled from the privledge shell
 """
 
-import time
-from privledge.ledger import Ledger
 from privledge import block
-from privledge.messaging import *
+from privledge import settings
+from privledge import utils
+from privledge import messaging
+from privledge.ledger import Ledger
 
+import json
+import socket
 
 ledger = None
 peers = dict()
@@ -37,15 +40,15 @@ def ledger_listeners(start):
 
     if start:
         # Spawn UDP Persistent Listener thread
-        _udp_thread = UDPListener(settings.BIND_IP, settings.BIND_PORT)
+        _udp_thread = messaging.UDPListener(settings.BIND_IP, settings.BIND_PORT)
         _udp_thread.start()
 
         # Spawn UDP Heartbeat thread
-        _udp_hb_thread = UDPHeartbeat()
+        _udp_hb_thread = messaging.UDPHeartbeat()
         _udp_hb_thread.start()
 
         # Spawn TCP Listener thread
-        _tcp_thread = TCPListener(settings.BIND_IP, settings.BIND_PORT)
+        _tcp_thread = messaging.TCPListener(settings.BIND_IP, settings.BIND_PORT)
         _tcp_thread.start()
 
     else:
@@ -76,8 +79,8 @@ def join_ledger(public_key_hash, member):
         return
 
     utils.log_message("Spawning TCP Connection Thread to {0}".format(member))
-    join_message = Message(settings.MSG_TYPE_JOIN, public_key_hash).prep_tcp()
-    thread = TCPMessageThread(member, join_message)
+    join_message = messaging.Message(settings.MSG_TYPE_JOIN, public_key_hash).prep_tcp()
+    thread = messaging.TCPMessageThread(member, join_message)
     thread.start()
     thread.join()
 
@@ -94,7 +97,7 @@ def join_ledger(public_key_hash, member):
                 # Hooray! We have a match
 
                 ## Sync Ledger
-                ledger_sync(member)
+                messaging.ledger_sync(member)
 
                 ## Request peers
 
@@ -135,10 +138,10 @@ def discover_ledgers(ip='<broadcast>', port=settings.BIND_PORT, timeout = settin
     results = dict()
 
     # Send out discovery query
-    s = socket(AF_INET, SOCK_DGRAM)
-    s.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-    s.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
-    message = Message(settings.MSG_TYPE_DISCOVER).__repr__()
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+    message = messaging.Message(settings.MSG_TYPE_DISCOVER).__repr__()
     s.sendto(message.encode(), (ip, port))
     try:
         # Listen for responses for 10 seconds
