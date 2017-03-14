@@ -55,12 +55,11 @@ def peer_sync(target):
     thread.join()
 
     message = json.loads(thread.message, object_hook=utils.message_decoder)
-    print(message)
-    # for peer in message:
-    #    daemon.peers.
 
-    # peers[member] = datetime.now()
+    for peer in message.message:
+        daemon.peers[peer] = datetime.now()
 
+    daemon.peers[target] = datetime.now()
 
 # TCP Thread Classes #
 
@@ -214,6 +213,11 @@ class TCPConnectionThread(threading.Thread):
         elif message.message_type == settings.MSG_TYPE_PEER:
             # Respond with list of peers
             peer_list = list(daemon.peers.keys())
+
+            target = self._socket.getsockname()
+            if target in peer_list:
+                peer_list.remove(target)
+
             response = Message(settings.MSG_TYPE_SUCCESS, peer_list).prep_tcp()
             self._respond(response)
             return
@@ -311,9 +315,9 @@ class UDPHeartbeat(threading.Thread):
         # Loop through the list of peers and send heartbeat messages
         while True and not self.stop.is_set():
 
-            for target, last_beat in daemon.peers.items():
+            for target, last_beat in list(daemon.peers.items()):
 
-                if (last_beat + timedelta(milliseconds=settings.MSG_HB_TTL)) < datetime.now():
+                if (last_beat + timedelta(seconds=settings.MSG_HB_TTL)) < datetime.now():
                     # Check for dead peers
                     with lock:
                         utils.log_message("Removing dead peer {0}".format(target))
@@ -324,7 +328,7 @@ class UDPHeartbeat(threading.Thread):
                     s = socket(AF_INET, SOCK_DGRAM)
                     message = Message(settings.MSG_TYPE_HB, daemon.ledger.id).__repr__()
 
-                    s.sendto(message, target)
+                    s.sendto(message.encode(), target)
                     utils.log_message("Heartbeat sent to {0}".format(target))
                     s.close()
 

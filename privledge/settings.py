@@ -12,7 +12,7 @@ MSG_TYPE_LEDGER = 'ledger'
 MSG_TYPE_SUCCESS = '200'
 MSG_TYPE_FAILURE = '404'
 MSG_HB_FREQ = 10 # Minimum time in seconds between HB checks to peers
-MSG_HB_TTL = 10*MSG_HB_FREQ  # Minimum time in milliseconds for HB to determine peer is dead
+MSG_HB_TTL = 10*MSG_HB_FREQ  # Minimum time in seconds for HB to determine peer is dead
 MSG_HB_TIMEOUT = 3 # Time in seconds for a hb messsage to timeout
 
 def init():
