@@ -32,10 +32,10 @@ $ pls
 
 ## From Pip
 _Not yet uploaded to Pip repository_
-'''
+```
 $ pip install privledge
 $ pls
-'''
+```
 
 # Usage
 This proof-of-concept code centers around two main components:
@@ -49,7 +49,7 @@ This is your interface to everything that runs in the background. `help` will sh
 This module maintains the ledger, all known peers, and any communication threads needed to pass messages to peers.
 
 ## Getting Started
-We begin by starting pls after it has been installed (see above):
+We begin by starting `pls` after it has been installed (see above):
 ```
 $ pls
 
@@ -116,7 +116,9 @@ This proof of concept uses several primitive protocols to communicate between pe
 
 ### UDP Listener
 The UDP Listener listens for ledger queries, and responds with a hash of the root of trust public key. This is the ledger `id` and serves to identify the ledger.
+
 The UDP Listener also listens for heartbeat messages with a matching ledger id and adds them to its peer list with the current time.
+
 An additional thread, UDP Heartbeat, regularly loops through the list of peers and sends heartbeat messages. It also maintains the peer list by pruning away peers it hasn't received a heartbeat from in some time.
 
 ### TCP Listener
