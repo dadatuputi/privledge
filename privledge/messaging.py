@@ -2,7 +2,6 @@ from socket import *
 from privledge import utils
 from privledge import settings
 from privledge import daemon
-from privledge import block
 from privledge import ledger
 
 import threading
@@ -31,13 +30,7 @@ class Message():
     def reprJSON(self):
         return self.__dict__
 
-def message_decoder(obj):
-    #if len(obj) == 1 and '
-    if 'type' in obj and 'message' in obj:
-        return Message(obj['type'], obj['message'])
-    elif 'signature' in obj and 'pubkey' in obj:
-        return block.Block(obj['type'], obj['predecessor'], obj['pubkey'], obj['pubkey_hash'], obj['signature'], obj['signatory_hash'])
-    return obj
+
 
 
 def ledger_sync(target, block_hash=None):
@@ -48,7 +41,7 @@ def ledger_sync(target, block_hash=None):
     thread.start()
     thread.join()
 
-    message = json.loads(thread.message, object_hook=message_decoder)
+    message = json.loads(thread.message, object_hook=utils.message_decoder)
 
     # Add received blocks to our ledger
     if daemon.ledger is None:
@@ -66,7 +59,7 @@ def peer_sync(target):
     thread.start()
     thread.join()
 
-    message = json.loads(thread.message, object_hook=message_decoder)
+    message = json.loads(thread.message, object_hook=utils.message_decoder)
 
     #for peer in message:
     #    daemon.peers.
@@ -211,7 +204,7 @@ class TCPConnectionThread(threading.Thread):
         with lock:
             utils.log_message("Received message from {0}:\n{1}".format(self._socket.getsockname(), message))
 
-        message = json.loads(message, object_hook=message_decoder)
+        message = json.loads(message, object_hook=utils.message_decoder)
 
 
         ## JOIN LEDGER ##
@@ -295,7 +288,7 @@ class UDPListener(threading.Thread):
             except OSError as e:
                 continue
             else:
-                message = json.loads(data.decode(), object_hook=message_decoder)
+                message = json.loads(data.decode(), object_hook=utils.message_decoder)
                 # Decode Message Type
                 if message.type == settings.MSG_TYPE_DISCOVER:
                     # Discovery Message
