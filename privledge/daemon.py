@@ -100,7 +100,7 @@ def join_ledger(public_key_hash, member):
                 messaging.ledger_sync(member)
 
                 ## Request peers
-
+                messaging.peer_sync(member)
 
                 # Start Listeners
                 ledger_listeners(True)
