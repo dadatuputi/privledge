@@ -17,6 +17,6 @@ setup(name='privledge',
           'termcolor',
       ],
       entry_points = {
-          'console_scripts': ['pls=privledge.main:start_privledge'],
+          'console_scripts': ['pls=privledge.main:main'],
       },
       zip_safe=False)
