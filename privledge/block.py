@@ -1,4 +1,4 @@
-from enum import IntEnum
+from enum import Enum
 import hashlib
 import json
 import base64
@@ -10,7 +10,7 @@ from privledge import utils
 
 
 
-class BlockType(IntEnum):
+class BlockType(Enum):
     root = 0
     trusted = 1
     member = 2
@@ -21,8 +21,8 @@ class BlockType(IntEnum):
 
 class Block():
 
-    def __init__(self, type, predecessor, pubkey, pubkey_hash, signature=None, signatory_hash=None):
-        self.type = type
+    def __init__(self, blocktype, predecessor, pubkey, pubkey_hash, signature=None, signatory_hash=None):
+        self.blocktype = blocktype
         self.predecessor = predecessor
         self.pubkey = pubkey
         self.pubkey_hash = pubkey_hash
@@ -57,7 +57,7 @@ class Block():
 
 
     def __str__(self):
-        return '\tType: {0}\n\tKey Hash: {1}\n\tSignatory Hash: {2}'.format(self.type.name, self.pubkey_hash, self.signatory_hash)
+        return '\tType: {0}\n\tKey Hash: {1}\n\tSignatory Hash: {2}'.format(self.blocktype.name, self.pubkey_hash, self.signatory_hash)
 
     def __repr__(self):
         return json.dumps(self.__dict__, cls=utils.ComplexEncoder, sort_keys=True)

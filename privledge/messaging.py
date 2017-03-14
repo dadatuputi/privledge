@@ -54,7 +54,7 @@ def ledger_sync(target, block_hash=None):
     if daemon.ledger is None:
         daemon.ledger = ledger.Ledger()
 
-    for block in message:
+    for block in message.message:
         daemon.ledger.append(block)
 
 
