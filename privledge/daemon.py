@@ -24,7 +24,8 @@ def create_ledger(pubkey, privkey):
     root_block = block.Block(block.BlockType.root, None, pubkey, pubkey_hash)
     root_block.sign(privkey, pubkey_hash)
 
-    ledger = Ledger(root_block)
+    ledger = Ledger()
+    ledger.append(root_block)
     _privkey = privkey
 
     # Start Listeners
