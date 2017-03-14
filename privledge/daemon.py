@@ -84,7 +84,7 @@ def join_ledger(public_key_hash, member):
     # If the message is a success, import the key
     try:
 
-        message = json.loads(thread.message, object_hook=message_decoder)
+        message = json.loads(thread.message, object_hook=utils.message_decoder)
 
         if message.type == settings.MSG_TYPE_SUCCESS:
             key = utils.get_key(message.message)
@@ -147,7 +147,7 @@ def discover_ledgers(ip='<broadcast>', port=settings.BIND_PORT, timeout = settin
             data, address = s.recvfrom(4096)
 
             try:
-                message = json.loads(data.decode(), object_hook=message_decoder)
+                message = json.loads(data.decode(), object_hook=utils.message_decoder)
 
                 if message.type == settings.MSG_TYPE_SUCCESS:
                     utils.log_message("Discovered ledger {0} at {1}".format(message.message, address))

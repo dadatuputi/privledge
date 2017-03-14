@@ -1,6 +1,8 @@
 from termcolor import cprint
 from enum import Enum
 from privledge import settings
+from privledge import messaging
+from privledge import block
 from Crypto.PublicKey import RSA
 from Crypto.Hash import SHA
 
@@ -88,6 +90,14 @@ def gen_hash(message):
 
 def append_len(message):
     return str(len(message)).zfill(settings.MSG_SIZE_BYTES) + message
+
+def message_decoder(obj):
+    #if len(obj) == 1 and '
+    if 'type' in obj and 'message' in obj:
+        return messaging.Message(obj['type'], obj['message'])
+    elif 'signature' in obj and 'pubkey' in obj:
+        return block.Block(obj['blocktype'], obj['predecessor'], obj['pubkey'], obj['pubkey_hash'], obj['signature'], obj['signatory_hash'])
+    return obj
 
 
 class ComplexEncoder(json.JSONEncoder):
