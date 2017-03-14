@@ -21,10 +21,13 @@ class Message():
         self.message = message
 
     def __repr__(self):
-        return json.dumps(self.__dict__)
+        return json.dumps(self, cls=utils.ComplexEncoder)
 
     def prep_tcp(self):
         return utils.append_len(self.__repr__())
+
+    def reprJSON(self):
+        return self.__dict__
 
 def message_decoder(obj):
     if 'type' in obj and 'message' in obj:
@@ -171,12 +174,19 @@ class TCPConnectionThread(threading.Thread):
 
         message = json.loads(message, object_hook=message_decoder)
 
+
+        ## JOIN LEDGER ##
         if message.type == settings.MSG_TYPE_JOIN:
             if message.message == daemon.ledger.id:
-                response = Message(settings.MSG_TYPE_SUCCESS, daemon.ledger.pubkey.exportKey().decode()).prep_tcp()
+                # Respond with success and the root key
+                response = Message(settings.MSG_TYPE_SUCCESS, daemon.ledger.root.pubkey).prep_tcp()
                 self._respond(response)
             else:
                 self._respond_error()
+        elif message.type == settings.MSG_TYPE_PEER:
+            pass
+        elif message.type == settings.MSG_TYPE_LEDGER:
+            pass
         # No response, send error status
         else:
             self._respond_error()

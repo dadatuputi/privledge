@@ -3,31 +3,23 @@ from privledge import block
 from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_PSS
 from Crypto.Hash import SHA
+import json
 
 class Ledger():
 
 
     def __init__(self, root_block):
-        self._root = root_block
-        self._len = 0
+        self.root = root_block
+        self.root.previous = None
+
+        self.len = 0
+        self.tail = root_block
 
 
 
     @property
     def id(self):
-        return self._root.pubkey_hash
-
-    @property
-    def tail(self):
-        return self._tail
-
-    @property
-    def root(self):
-        return self._root
-
-    @property
-    def len(self):
-        return self._len
+        return self.root.pubkey_hash
 
 
 
@@ -47,7 +39,7 @@ class Ledger():
         # Ensure the hash is correct
         if not block.predecessor == self.tail.hash:
             raise ValueError('Predecessor hash does not match the last accepted block', block.predecessor,
-                             self._tail.hash)
+                             self.tail.hash)
 
         # Find the signatory key in our ledger
         signatory = self.find_key(block.signatory_hash)
@@ -62,5 +54,16 @@ class Ledger():
         # Hash is correct, Signatory Exists, Signature is Valid: Add to ledger!
         block.previous = self.tail
         self.tail = block
-        self._len += 1
+        self.len += 1
 
+    def to_list(self):
+        blocklist = []
+        self.reverse_list(blocklist, self.tail)
+        return blocklist
+
+    def reverse_list(self, list, item):
+        if item.previous == None:
+            list.append(item)
+        else:
+            self.reverse_list(list, item.previous)
+            list.append(item)
