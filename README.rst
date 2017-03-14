@@ -56,6 +56,44 @@ Welcome to Privledge Shell...
 >
 ```
 
-We can use the `list` command to search our local subnet for available ledgers, or `list <ip>` to query a specific ip address:
+We can initialize a ledger with the `init` command, followed either by a RSA public key string, or a path to a public key file. Using the `init generate` command will generate a public/private RSA key pair. If you also provide a path, it will save the keys to the local filesystem.
+```
+> init generate
+```
+
+If we would like to join an existing ledger, we can use the `list` command to search our local subnet for available ledgers, or `list <ip>` to query a specific ip address:
 ```
 > list
+
+If we see a ledger we would like to join, we use the `join` command, followed by the number of the item provided by the `list` command:
+```
+> join 1
+```
+
+The `init` and `join` commands will join us to a ledger. If we would like to leave the ledger, `leave` will remove the ledger from our system and allow us to join another or generate our own:
+```
+> leave
+```
+
+`status` will show the status of the ledger we are a member of:
+```
+> status
+```
+
+## Protocols
+This proof of concept uses several primitive protocols to communicate between peers. Once a ledger is established (either joined or initialized), two listeners are spawned on port 2525, respectively:
+
+* TCP Listener
+* UDP Listener
+
+### UDP Listener
+The UDP Listener listens for ledger queries, and responds with a hash of the root of trust public key. This is the ledger `id` and serves to identify the ledger.
+The UDP Listener also listens for heartbeat messages with a matching ledger id and adds them to its peer list with the current time.
+An additional thread, UDP Heartbeat, regularly loops through the list of peers and sends heartbeat messages. It also maintains the peer list by pruning away peers it hasn't received a heartbeat from in some time.
+
+### TCP Listener
+The TCP Listener accepts sockets and spawns threads that manage different message types. TCP messages are of the following types:
+
+* `join` : This message contains a block hash. If it matches the ledger id, the receiver will respond with the entire public key of the root of trust
+* `ledger` : This message contains a block hash. The receiver will respond with a list of blocks up to the specified block hash. If the block hash is null, the entire ledger will be transmitted. This message type allows for synchronization between nodes
+* `peers` : This message simply requests the list of peers from the receiver. The receiver replies with a list of its peers.

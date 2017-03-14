@@ -294,9 +294,10 @@ class UDPListener(threading.Thread):
 
                 elif message.message_type == settings.MSG_TYPE_HB:
                     # Heartbeat Message
-                    with lock:
-                        utils.log_message("Received heartbeat from {0}".format(addr))
-                    daemon.peers[(addr[0], settings.BIND_PORT)] = datetime.now()
+                    if message.message == daemon.ledger.id:
+                        with lock:
+                            utils.log_message("Received heartbeat from {0}".format(addr))
+                        daemon.peers[(addr[0], settings.BIND_PORT)] = datetime.now()
 
         discovery_socket.close()
 
