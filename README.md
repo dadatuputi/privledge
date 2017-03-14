@@ -127,3 +127,20 @@ The TCP Listener accepts sockets and spawns threads that manage different messag
 * `join` : This message contains a block hash. If it matches the ledger id, the receiver will respond with the entire public key of the root of trust
 * `ledger` : This message contains a block hash. The receiver will respond with a list of blocks up to the specified block hash. If the block hash is null, the entire ledger will be transmitted. This message type allows for synchronization between nodes
 * `peers` : This message simply requests the list of peers from the receiver. The receiver replies with a list of its peers.
+
+## To Be Implemented:
+As a proof of concept, this project is a work in progress. The following features have yet to be implemented for this to be considered a 'functional' proof of concept:
+
+* **Gossip Protocol**: This protocol is necessary to maintain
+
+    - Accurate ledger synchronization between peers
+    - Accurate peer list synchronization between peers
+    - New block propegation throughout peers
+
+* **System Integration**: As a proof of concept, it must demonstrate how a system could utilize the ledger to 'whitelist' console access, for example.
+
+* **Privledge Levels**: Demonstrate different uses for the different authorities:
+
+    - root
+    - trusted
+    - member
