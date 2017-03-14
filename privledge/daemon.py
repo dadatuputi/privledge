@@ -92,25 +92,11 @@ def join_ledger(public_key_hash, member):
             if public_key_hash == key_hash:
                 # Hooray! We have a match
 
-                # Request ledger
-                # Start Ledger Sync Thread
-                utils.log_message("Requesting ledger from {0}".format(member))
+                ## Sync Ledger
+                ledger_sync(member)
 
-                ledger_message = Message(settings.MSG_TYPE_LEDGER, None).prep_tcp()
-                thread = TCPMessageThread(member, ledger_message)
-                thread.start()
-                thread.join()
+                ## Request peers
 
-                message = json.loads(thread.message, object_hook=message_decoder)
-
-                # Request peers
-
-
-
-
-
-                ledger = Ledger(key.publickey())
-                peers[member] = datetime.now()
 
                 # Start Listeners
                 ledger_listeners(True)
