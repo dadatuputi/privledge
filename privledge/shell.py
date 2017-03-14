@@ -138,7 +138,7 @@ class PrivledgeShell(Cmd):
             return
 
         # Pass the daemon the hash and members
-        daemon.join_ledger(list(self.results.keys())[number-1], list(self.results.values())[number-1])
+        daemon.join_ledger(list(self.results.keys())[number-1], list(list(self.results.values())[number-1])[0])
 
 
     def do_leave(self, args):
