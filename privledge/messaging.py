@@ -2,6 +2,7 @@ from socket import *
 from privledge import utils
 from privledge import settings
 from privledge import daemon
+from privledge import block
 
 import threading
 import json
@@ -30,8 +31,11 @@ class Message():
         return self.__dict__
 
 def message_decoder(obj):
+    #if len(obj) == 1 and '
     if 'type' in obj and 'message' in obj:
         return Message(obj['type'], obj['message'])
+    elif 'signature' in obj and 'pubkey' in obj:
+        return block.Block(obj['type'], obj['predecessor'], obj['pubkey'], obj['pubkey_hash'], obj['signature'], obj['signatory_hash'])
     return obj
 
 
@@ -181,12 +185,24 @@ class TCPConnectionThread(threading.Thread):
                 # Respond with success and the root key
                 response = Message(settings.MSG_TYPE_SUCCESS, daemon.ledger.root.pubkey).prep_tcp()
                 self._respond(response)
+                return
             else:
                 self._respond_error()
+                return
         elif message.type == settings.MSG_TYPE_PEER:
+            # Respond with list of peers
             pass
         elif message.type == settings.MSG_TYPE_LEDGER:
-            pass
+            # Respond with the ledger
+            ledger_list = daemon.ledger.to_list(message.message)
+
+            if ledger_list is None:
+                self._respond_error()
+                return
+
+            response = Message(settings.MSG_TYPE_SUCCESS, ledger_list).prep_tcp()
+            self._respond(response)
+
         # No response, send error status
         else:
             self._respond_error()
