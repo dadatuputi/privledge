@@ -95,6 +95,7 @@ def join_ledger(public_key_hash, member):
 
             if public_key_hash == key_hash:
                 # Hooray! We have a match
+                utils.log_message("Joined ledger {}".format(public_key_hash), force=True)
 
                 ## Sync Ledger
                 messaging.ledger_sync(member)

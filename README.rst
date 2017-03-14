@@ -59,25 +59,52 @@ Welcome to Privledge Shell...
 We can initialize a ledger with the `init` command, followed either by a RSA public key string, or a path to a public key file. Using the `init generate` command will generate a public/private RSA key pair. If you also provide a path, it will save the keys to the local filesystem.
 ```
 > init generate
+
+Public Key Hash: 08022ade6757177ad4e0395118cf638b0eabf562
+Added key (08022ade6757177ad4e0395118cf638b0eabf562) as a new Root of Trust
+>
 ```
 
 If we would like to join an existing ledger, we can use the `list` command to search our local subnet for available ledgers, or `list <ip>` to query a specific ip address:
 ```
 > list
+Searching for available ledgers for 10 seconds...
+Found 1 available ledgers
+1 | 192.168.159.129: (1 members) ccee4bcc68631ee2c8905d4600c1a1432818db00
+>
+```
 
 If we see a ledger we would like to join, we use the `join` command, followed by the number of the item provided by the `list` command:
 ```
 > join 1
+Joined ledger ccee4bcc68631ee2c8905d4600c1a1432818db00
+>
+```
+
+To see the status of our ledger, we can use the `status` command:
+```
+> status
+You are a member of ledger ccee4bcc68631ee2c8905d4600c1a1432818db00 with 1 peers.
+>
+```
+
+`status detail` gives us more details about our ledger:
+
+```
+You are a member of ledger ccee4bcc68631ee2c8905d4600c1a1432818db00 with 1 peers.
+
+Root of Trust:
+	Type: root
+	Key Hash: ccee4bcc68631ee2c8905d4600c1a1432818db00
+	Signatory Hash: ccee4bcc68631ee2c8905d4600c1a1432818db00
+>
 ```
 
 The `init` and `join` commands will join us to a ledger. If we would like to leave the ledger, `leave` will remove the ledger from our system and allow us to join another or generate our own:
 ```
 > leave
-```
-
-`status` will show the status of the ledger we are a member of:
-```
-> status
+Left ledger ccee4bcc68631ee2c8905d4600c1a1432818db00
+>
 ```
 
 ## Protocols

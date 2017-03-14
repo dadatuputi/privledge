@@ -45,6 +45,8 @@ def ledger_sync(target, block_hash=None):
     for block in message.message:
         daemon.ledger.append(block)
 
+    utils.log_message("Successfully synchronized {} block(s) from {}".format(len(message.message), target))
+
 
 def peer_sync(target):
     utils.log_message("Requesting peers from {0}".format(target))
@@ -60,6 +62,9 @@ def peer_sync(target):
         daemon.peers[peer] = datetime.now()
 
     daemon.peers[target] = datetime.now()
+
+    utils.log_message("Successfully synchronized {} peer(s) from {}".format(len(message.message), target))
+
 
 # TCP Thread Classes #
 
