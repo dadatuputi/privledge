@@ -6,38 +6,56 @@ Privledge
 ![Screenshot software](http://url/screenshot-software.png "screenshot software")
 
 ## Download
-* [Version X.Y](https://github.com/username/sw-name/archive/master.zip)
+* [Version 0.1](https://github.com/elBradford/privledge/archive/master.zip)
 * Other Versions
 
 ## Usage
-```$ git clone https://github.com/username/software-project.git
+```$ git clone https://github.com/elBradford/privledge.git
 ...```
 
-## Contributors
-
-### Contributors on GitHub
-* [Contributors](https://github.com/username/sw-name/graphs/contributors)
-
-### Translations
-* [Transifex](https://www.transifex.com/projects/p/sw-name/)
-
-### Third party libraries
-* see [LIBRARIES](https://github.com/username/sw-name/blob/master/LIBRARIES.md) files
-
 ## License
-* see [LICENSE](https://github.com/username/sw-name/blob/master/LICENSE.md) file
+* see [LICENSE](https://github.com/elBradford/privledge/blob/master/LICENSE.md) file
 
 ## Version
-* Version X.Y
+* Version 0.1
 
-## How-to use this code
-* see [INSTRUCTIONS](https://github.com/username/sw-name/blob/master/INSTRUCTIONS.md) file
+# Installation
+## From Source
+```
+$ git clone https://github.com/elBradford/privledge.git
+$ cd privledge
+$ pip install -e .
+$ pls
+```
+`-e` is optional and allows you to modify the code and have the changes immediately applied to the installed script (no need to reinstall to see changes).
 
-## Contact
-#### Developer/Company
-* Homepage:
-* e-mail:
-* Twitter: [@twitterhandle](https://twitter.com/twitterhandle "twitterhandle on twitter")
-* other communication/social media
+## From Pip
+_Not yet uploaded to Pip repository_
+'''
+$ pip install privledge
+$ pls
+'''
 
-[![Flattr this git repo](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=username&url=https://github.com/username/sw-name&title=sw-name&language=&tags=github&category=software)
+# Usage
+This proof-of-concept code centers around two main components:
+* Privledge Shell
+* Privledge Daemon
+
+## Privledge Shell
+This is your interface to everything that runs in the background. `help` will show all the commands available.
+
+## Privledge Daemon
+This module maintains the ledger, all known peers, and any communication threads needed to pass messages to peers.
+
+## Getting Started
+We begin by starting pls after it has been installed (see above):
+```
+$ pls
+
+Welcome to Privledge Shell...
+>
+```
+
+We can use the `list` command to search our local subnet for available ledgers, or `list <ip>` to query a specific ip address:
+```
+> list

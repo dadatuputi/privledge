@@ -202,7 +202,7 @@ class TCPConnectionThread(threading.Thread):
         message = json.loads(message, object_hook=utils.message_decoder)
 
         ## JOIN LEDGER ##
-        if message.type == settings.MSG_TYPE_JOIN:
+        if message.message_type == settings.MSG_TYPE_JOIN:
             if message.message == daemon.ledger.id:
                 # Respond with success and the root key
                 response = Message(settings.MSG_TYPE_SUCCESS, daemon.ledger.root.pubkey).prep_tcp()
@@ -211,14 +211,14 @@ class TCPConnectionThread(threading.Thread):
             else:
                 self._respond_error()
                 return
-        elif message.type == settings.MSG_TYPE_PEER:
+        elif message.message_type == settings.MSG_TYPE_PEER:
             # Respond with list of peers
             peer_list = list(daemon.peers.keys())
             response = Message(settings.MSG_TYPE_SUCCESS, peer_list).prep_tcp()
             self._respond(response)
             return
 
-        elif message.type == settings.MSG_TYPE_LEDGER:
+        elif message.message_type == settings.MSG_TYPE_LEDGER:
             # Respond with the ledger
             ledger_list = daemon.ledger.to_list(message.message)
 
@@ -281,14 +281,14 @@ class UDPListener(threading.Thread):
             else:
                 message = json.loads(data.decode(), object_hook=utils.message_decoder)
                 # Decode Message Type
-                if message.type == settings.MSG_TYPE_DISCOVER:
+                if message.message_type == settings.MSG_TYPE_DISCOVER:
                     # Discovery Message
                     with lock:
                         utils.log_message("Received discovery inquiry from {0}, responding...".format(addr))
                     response = Message(settings.MSG_TYPE_SUCCESS, daemon.ledger.id).__repr__()
                     discovery_socket.sendto(response.encode(), addr)
 
-                elif message.type == settings.MSG_TYPE_HB:
+                elif message.message_type == settings.MSG_TYPE_HB:
                     # Heartbeat Message
                     with lock:
                         utils.log_message("Received heartbeat from {0}".format(addr))

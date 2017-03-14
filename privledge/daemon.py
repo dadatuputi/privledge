@@ -89,7 +89,7 @@ def join_ledger(public_key_hash, member):
 
         message = json.loads(thread.message, object_hook=utils.message_decoder)
 
-        if message.type == settings.MSG_TYPE_SUCCESS:
+        if message.message_type == settings.MSG_TYPE_SUCCESS:
             key = utils.get_key(message.message)
             key_hash = utils.gen_hash(key.publickey().exportKey())
 
@@ -109,7 +109,7 @@ def join_ledger(public_key_hash, member):
                 raise ValueError('Public key returned does not match requested hash: {0}'.format(key_hash))
 
         else:
-            raise ValueError('Response was not as expected: {0}'.format(message.type))
+            raise ValueError('Response was not as expected: {0}'.format(message.message_type))
 
     except (ValueError, TypeError) as e:
         utils.log_message("Not a valid response from {0}: {1}".format(member, e))
@@ -152,7 +152,7 @@ def discover_ledgers(ip='<broadcast>', port=settings.BIND_PORT, timeout = settin
             try:
                 message = json.loads(data.decode(), object_hook=utils.message_decoder)
 
-                if message.type == settings.MSG_TYPE_SUCCESS:
+                if message.message_type == settings.MSG_TYPE_SUCCESS:
                     utils.log_message("Discovered ledger {0} at {1}".format(message.message, address))
 
                     # Received response

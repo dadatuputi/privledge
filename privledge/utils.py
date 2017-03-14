@@ -93,8 +93,8 @@ def append_len(message):
 
 def message_decoder(obj):
     #if len(obj) == 1 and '
-    if 'type' in obj and 'message' in obj:
-        return messaging.Message(obj['type'], obj['message'])
+    if 'message_type' in obj and 'message' in obj:
+        return messaging.Message(obj['message_type'], obj['message'])
     elif 'signature' in obj and 'pubkey' in obj:
         return block.Block(obj['blocktype'], obj['predecessor'], obj['pubkey'], obj['pubkey_hash'], obj['signature'], obj['signatory_hash'])
     return obj
