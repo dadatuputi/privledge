@@ -199,7 +199,7 @@ class TCPConnectionThread(threading.Thread):
         with lock:
             utils.log_message(
                 "Responded with message to {0}:\n{1}".format(self._socket.getsockname(), message))
-        self._socket.sendall(utils.append_len(message).encode())
+        self._socket.sendall(message.encode())
         self._socket.shutdown(SHUT_WR)
         self._socket.recv(4096)
         self._socket.close()
