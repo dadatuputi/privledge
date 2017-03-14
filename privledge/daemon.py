@@ -80,10 +80,11 @@ def join_ledger(public_key_hash, member):
     thread.start()
     thread.join()
 
-    message = json.loads(thread.message.encode(), object_hook=message_decoder())
-
     # If the message is a success, import the key
     try:
+
+        message = json.loads(thread.message.encode(), object_hook=message_decoder())
+
         if message.type == settings.MSG_TYPE_SUCCESS:
             key = utils.get_key(message.message)
             key_hash = utils.gen_hash(key.publickey().exportKey())
@@ -102,8 +103,9 @@ def join_ledger(public_key_hash, member):
         else:
             raise ValueError('Response was not as expected: {0}'.format(message.type))
 
-    except ValueError as e:
+    except (ValueError, TypeError) as e:
         utils.log_message("Not a valid response from {0}: {1}".format(member, e))
+
 
     # Request peers
 

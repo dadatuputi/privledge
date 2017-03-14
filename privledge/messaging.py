@@ -104,7 +104,7 @@ class TCPMessageThread(threading.Thread):
 
         try:
             tcp_message_socket.connect(self._target)
-            tcp_message_socket.sendall(utils.append_len(self.message).encode())
+            tcp_message_socket.sendall(self.message.encode())
 
             # Get response
             self.message = ''
