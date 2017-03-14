@@ -21,13 +21,13 @@ class BlockType(IntEnum):
 
 class Block():
 
-    def __init__(self, type, predecessor, pubkey, pubkey_hash):
+    def __init__(self, type, predecessor, pubkey, pubkey_hash, signature=None, signatory_hash=None):
         self.type = type
         self.predecessor = predecessor
         self.pubkey = pubkey
         self.pubkey_hash = pubkey_hash
-        self.signature = None
-        self.signatory_hash = None
+        self.signature = signature
+        self.signatory_hash = signatory_hash
 
     @property
     def hash(self):

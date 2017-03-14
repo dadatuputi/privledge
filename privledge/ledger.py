@@ -56,14 +56,18 @@ class Ledger():
         self.tail = block
         self.len += 1
 
-    def to_list(self):
+    def to_list(self, predecessor=None):
         blocklist = []
-        self.reverse_list(blocklist, self.tail)
+        self.reverse_list(blocklist, self.tail, predecessor)
         return blocklist
 
-    def reverse_list(self, list, item):
-        if item.previous == None:
+    def reverse_list(self, list, item, predecessor):
+        if item.predecessor is None and predecessor is not None:
+            # We got a bogus predessor, return None list
+            list = None
+        elif item.predecessor == predecessor:
             list.append(item)
         else:
-            self.reverse_list(list, item.previous)
-            list.append(item)
+            self.reverse_list(list, item.previous, predecessor)
+            if list is not None:
+                list.append(item)

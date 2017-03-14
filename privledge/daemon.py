@@ -74,7 +74,7 @@ def join_ledger(public_key_hash, member):
         print("You are already a member of a ledger")
         return
 
-    utils.log_message("Spawning TCP Connection Thread to {0}:{1}".format(member, member[1]))
+    utils.log_message("Spawning TCP Connection Thread to {0}".format(member))
     join_message = Message(settings.MSG_TYPE_JOIN, public_key_hash).prep_tcp()
     thread = TCPMessageThread(member, join_message)
     thread.start()
@@ -83,16 +83,34 @@ def join_ledger(public_key_hash, member):
     # If the message is a success, import the key
     try:
 
-        message = json.loads(thread.message.encode(), object_hook=message_decoder())
+        message = json.loads(thread.message, object_hook=message_decoder)
 
         if message.type == settings.MSG_TYPE_SUCCESS:
             key = utils.get_key(message.message)
             key_hash = utils.gen_hash(key.publickey().exportKey())
 
             if public_key_hash == key_hash:
-                # Hooray! Create new ledger and add new member
+                # Hooray! We have a match
+
+                # Request ledger
+                # Start Ledger Sync Thread
+                utils.log_message("Requesting ledger from {0}".format(member))
+
+                ledger_message = Message(settings.MSG_TYPE_LEDGER, None).prep_tcp()
+                thread = TCPMessageThread(member, ledger_message)
+                thread.start()
+                thread.join()
+
+                message = json.loads(thread.message, object_hook=message_decoder)
+
+                # Request peers
+
+
+
+
+
                 ledger = Ledger(key.publickey())
-                peers[member] = time.now()
+                peers[member] = datetime.now()
 
                 # Start Listeners
                 ledger_listeners(True)
@@ -106,11 +124,6 @@ def join_ledger(public_key_hash, member):
     except (ValueError, TypeError) as e:
         utils.log_message("Not a valid response from {0}: {1}".format(member, e))
 
-
-    # Request peers
-
-
-    # Request ledger
 
 
 def leave_ledger():
