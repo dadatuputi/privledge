@@ -95,9 +95,6 @@ class TCPMessageThread(threading.Thread):
             utils.log_message("Sending Message to {0} {1}: {2}{3}".format(target[0], target[1], message[:10], '...'))
         self._target = target
 
-        if isinstance(message, Message):
-            message = json.dumps(message)
-
         self.message = message
         self._timeout = timeout
 
