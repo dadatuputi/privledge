@@ -1,24 +1,21 @@
+import json
+import threading
+import time
+from datetime import datetime, timedelta
 from socket import *
-from privledge import utils
-from privledge import settings
+
 from privledge import daemon
 from privledge import ledger
-
-import threading
-import json
-from datetime import datetime, timedelta
-import time
-
-
+from privledge import settings
+from privledge import utils
 
 lock = threading.Lock()
 
 
-## Message Class ##
-class Message():
-
-    def __init__(self, type, message=None):
-        self.type = type
+# Message Class #
+class Message:
+    def __init__(self, message_type, message=None):
+        self.message_type = message_type
         self.message = message
 
     def __repr__(self):
@@ -27,10 +24,8 @@ class Message():
     def prep_tcp(self):
         return utils.append_len(self.__repr__())
 
-    def reprJSON(self):
+    def repr_json(self):
         return self.__dict__
-
-
 
 
 def ledger_sync(target, block_hash=None):
@@ -60,19 +55,17 @@ def peer_sync(target):
     thread.join()
 
     message = json.loads(thread.message, object_hook=utils.message_decoder)
-
-    #for peer in message:
+    print(message)
+    # for peer in message:
     #    daemon.peers.
 
-    #peers[member] = datetime.now()
+    # peers[member] = datetime.now()
 
 
-
-### TCP Thread Classes ###
+# TCP Thread Classes #
 
 # Persistent TCP Listener thread that listens for messages
 class TCPListener(threading.Thread):
-
     def __init__(self, ip=settings.BIND_IP, port=settings.BIND_PORT):
         super(TCPListener, self).__init__()
         with lock:
@@ -121,9 +114,9 @@ class TCPListener(threading.Thread):
         finally:
             self.tcp_server_socket.close()
 
+
 # Generic outbound TCP connection handler
 class TCPMessageThread(threading.Thread):
-
     def __init__(self, target, message, timeout=5):
         super(TCPMessageThread, self).__init__()
         with lock:
@@ -162,19 +155,21 @@ class TCPMessageThread(threading.Thread):
 
         except Exception as e:
             with lock:
-                utils.log_message('Could not send or receive message to or from the ledger at {0}:\n{1}\n{2}'.format(tcp_message_socket.getsockname()[0], self.message, e), force=True)
+                utils.log_message('Could not send or receive message to or from the ledger at {0}:\n{1}\n{2}'.format(
+                    tcp_message_socket.getsockname()[0], self.message, e), force=True)
 
         else:
             with lock:
                 utils.log_message(
-                    "Received Response from {0} {1}: {2}{3}".format(self._target[0], self._target[1], self.message[:10],'...'))
+                    "Received Response from {0} {1}: {2}{3}".format(self._target[0], self._target[1], self.message[:10],
+                                                                    '...'))
 
         finally:
             tcp_message_socket.close()
 
+
 # Generic inbound TCP connection handler
 class TCPConnectionThread(threading.Thread):
-
     def __init__(self, socket):
         super(TCPConnectionThread, self).__init__()
         with lock:
@@ -205,7 +200,6 @@ class TCPConnectionThread(threading.Thread):
             utils.log_message("Received message from {0}:\n{1}".format(self._socket.getsockname(), message))
 
         message = json.loads(message, object_hook=utils.message_decoder)
-
 
         ## JOIN LEDGER ##
         if message.type == settings.MSG_TYPE_JOIN:
@@ -255,13 +249,10 @@ class TCPConnectionThread(threading.Thread):
         self._socket.close()
 
 
-
-
 ### UDP Threading Classes ###
 
 # Persistent UDP Listener thread that listens for discovery and heartbeat messages
 class UDPListener(threading.Thread):
-
     def __init__(self, ip, port):
         super(UDPListener, self).__init__()
         with lock:
@@ -299,7 +290,7 @@ class UDPListener(threading.Thread):
 
                 elif message.type == settings.MSG_TYPE_HB:
                     # Heartbeat Message
-                    with lock :
+                    with lock:
                         utils.log_message("Received heartbeat from {0}".format(addr))
                     daemon.peers[addr] = datetime.now()
 
@@ -308,7 +299,6 @@ class UDPListener(threading.Thread):
 
 # Persistent UDP Heartbeat Thread; sends hb to peers
 class UDPHeartbeat(threading.Thread):
-
     def __init__(self):
         super(UDPHeartbeat, self).__init__()
         with lock:
@@ -318,11 +308,10 @@ class UDPHeartbeat(threading.Thread):
 
     def run(self):
 
-
         # Loop through the list of peers and send heartbeat messages
         while True and not self.stop.is_set():
 
-            for target,last_beat in daemon.peers.items():
+            for target, last_beat in daemon.peers.items():
 
                 if (last_beat + timedelta(milliseconds=settings.MSG_HB_TTL)) < datetime.now():
                     # Check for dead peers

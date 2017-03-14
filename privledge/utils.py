@@ -104,8 +104,8 @@ class ComplexEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, bytes):          # Handle bytes
             return obj.decode('ascii')
-        if hasattr(obj, 'reprJSON'):        # Use object reprJSON method
-            return obj.reprJSON()
+        if hasattr(obj, 'repr_json'):        # Use object repr_json method
+            return obj.repr_json()
         else:
             return json.JSONEncoder.default(self, obj)
 
