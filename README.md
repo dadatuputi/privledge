@@ -10,11 +10,12 @@ Privledge
 * Other Versions
 
 ## Usage
-```$ git clone https://github.com/elBradford/privledge.git
-...```
+```
+$ git clone https://github.com/elBradford/privledge.git
+```
 
 ## License
-* see [LICENSE](https://github.com/elBradford/privledge/blob/master/LICENSE.md) file
+* TBD
 
 ## Version
 * Version 0.1
