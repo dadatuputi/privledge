@@ -74,41 +74,41 @@ def join_ledger(public_key_hash, member):
         print("You are already a member of a ledger")
         return
 
-    utils.log_message("Spawning TCP Connection Thread to {0}:{1}".format(member[0], member[1]))
-    join_message = Message('join', public_key_hash).prep_tcp()
+    utils.log_message("Spawning TCP Connection Thread to {0}:{1}".format(member, member[1]))
+    join_message = Message(settings.MSG_TYPE_JOIN, public_key_hash).prep_tcp()
     thread = TCPMessageThread(member, join_message)
     thread.start()
     thread.join()
 
-    # Parse through the worker threads' results
-    results = thread.message
-    for target in results:
-        value = results[target]
-        if value is not None and value is not '':
-            decoded = json.loads(results[target])
+    message = json.loads(thread.message.encode(), object_hook=message_decoder())
 
-            '''
-            Look for a json encoded string in this format:
-                status (200/404)
-                public_key (public key)
-            '''
+    # If the message is a success, import the key
+    try:
+        if message.type == settings.MSG_TYPE_SUCCESS:
+            key = utils.get_key(message.message)
+            key_hash = utils.gen_hash(key.publickey().exportKey())
 
-            # If the message is properly formatted, try to parse the message as a key
-            if 'status' in decoded and decoded['status'] == 200 and 'public_key' in decoded:
-                key = utils.get_key(decoded['public_key'])
-                key_hash = utils.gen_hash(key.publickey().exportKey())
-                if public_key_hash == key_hash:
-                    # Hooray! Create new ledger and add new member
-                    if ledger is None:
-                        ledger = Ledger(key.publickey())
-                        utils.log_message("Joined ledger {0}".format(public_key_hash))
+            if public_key_hash == key_hash:
+                # Hooray! Create new ledger and add new member
+                ledger = Ledger(key.publickey())
+                peers[member] = time.now()
 
-                        # Start Listeners
-                        ledger_listeners(True)
-                    ledger.add_peer(target[0])
-                    continue
+                # Start Listeners
+                ledger_listeners(True)
 
-        utils.log_message("Not a valid response from {0}: {1}".format(target[0], results[target]))
+            else:
+                raise ValueError('Public key returned does not match requested hash: {0}'.format(key_hash))
+
+        else:
+            raise ValueError('Response was not as expected: {0}'.format(message.type))
+
+    except ValueError as e:
+        utils.log_message("Not a valid response from {0}: {1}".format(member, e))
+
+    # Request peers
+
+
+    # Request ledger
 
 
 def leave_ledger():
@@ -142,13 +142,13 @@ def discover_ledgers(ip='<broadcast>', port=settings.BIND_PORT, timeout = settin
         # Listen for responses for 10 seconds
         s.settimeout(timeout)
         while True:
-            data, address = s.recvfrom(1024)
+            data, address = s.recvfrom(4096)
 
             try:
                 message = json.loads(data.decode(), object_hook=message_decoder)
 
-                if message.type == settings.MSG_TYPE_DISCOVER:
-                    utils.log_message("Discovered ledger {0} at {1}".format(hash, address))
+                if message.type == settings.MSG_TYPE_SUCCESS:
+                    utils.log_message("Discovered ledger {0} at {1}".format(message.message, address))
 
                     # Received response
                     # Is the hash already in our list?
