@@ -3,7 +3,7 @@ Privledge
 **Privledge** is a proof-of-concept private, privleged ledger used for public key management written in python.
 
 #### Screenshot
-![Screenshot software](http://url/screenshot-software.png "screenshot software")
+![privledge screenshot](https://github.com/elBradford/privledge/raw/master/screenshot.png "privledge screenshot")
 
 ## Download
 * [Version 0.1](https://github.com/elBradford/privledge/archive/master.zip)
