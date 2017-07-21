@@ -21,20 +21,35 @@ $ git clone https://github.com/elBradford/privledge.git
 * Version 0.1
 
 # Installation
-## From Source
-```
-$ git clone https://github.com/elBradford/privledge.git
-$ cd privledge
-$ pip install -e .
-$ pls
-```
-`-e` is optional and allows you to modify the code and have the changes immediately applied to the installed script (no need to reinstall to see changes).
 
-## From Pip
-_Not yet uploaded to Pip repository_
+## Recommendation
+_Privledge uses Python 3.5 so be sure to use the appropriate command for Python 3.5 pip_
+
+I recommend you use a virtualenv with mkproject ([documentation](http://virtualenvwrapper.readthedocs.io/en/latest/command_ref.html)):
 ```
-$ pip install privledge
-$ pls
+$ mkproject -p python3.5 privledge
+```
+To enter and leave your virtual environment, use the commands `workon` and `deactivate` respectively:
+```
+$ workon privledge
+(privledge) $ deactivate
+$
+```
+
+## From Source
+You need the Python 3.5 headers (available in the python3.5-dev package on Ubuntu)
+```
+(privledge) $ git clone git@github.com:elBradford/privledge.git .
+(privledge) $ pip install -e .
+(privledge) $ pls
+```
+`-e` is an optional pip argument that allows you to modify the code and have the changes immediately applied to the installed script - no need to reinstall to see changes you  made.
+
+## From PyPI
+TODO: _Not yet uploaded to Pip repository_
+```
+(privledge) $ pip install privledge
+(privledge) $ pls
 ```
 
 # Usage
@@ -51,7 +66,7 @@ This module maintains the ledger, all known peers, and any communication threads
 ## Getting Started
 We begin by starting `pls` after it has been installed (see above):
 ```
-$ pls
+(privledge) $ pls
 
 Welcome to Privledge Shell...
 >
