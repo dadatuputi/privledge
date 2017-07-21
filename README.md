@@ -25,7 +25,7 @@ $ git clone https://github.com/elBradford/privledge.git
 ## Recommendation
 _Privledge uses Python 3.5 so be sure to use the appropriate command for Python 3.5 pip_
 
-I recommend you use a virtualenv with mkvirtualenv ([read the documentation for more details](http://virtualenvwrapper.readthedocs.io/en/latest/command_ref.html)):
+I recommend you use a virtualenv with mkproject ([documentation](http://virtualenvwrapper.readthedocs.io/en/latest/command_ref.html)):
 ```
 $ mkproject -p python3.5 privledge
 ```
