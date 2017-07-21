@@ -39,7 +39,7 @@ $
 ## From Source
 You need the Python 3.5 headers (available in the python3.5-dev package on Ubuntu)
 ```
-(privledge) $ git clone https://github.com/elBradford/privledge.git .
+(privledge) $ git clone git@github.com:elBradford/privledge.git .
 (privledge) $ pip install -e .
 (privledge) $ pls
 ```
