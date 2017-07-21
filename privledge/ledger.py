@@ -14,7 +14,7 @@ class Ledger:
     def id(self):
         return self.root.message_hash
 
-    def find_message(self, hash):
+    def find_key(self, hash):
         current = self.tail
 
         while current:
@@ -34,12 +34,12 @@ class Ledger:
         # Do some checks to make sure block is correctly formed
         else:
 
-            # Ensure the hash is correct
+            # Is this block's predecessor the last block in our chain?
             if not block.predecessor == self.tail.hash:
                 raise ValueError('Predecessor hash does not match the last accepted block', block.predecessor,
                                  self.tail.hash)
 
-            # Find the signatory key in our ledger
+            # Is this block properly signed by an accepted key on our chain?
             signatory = self.find_message(block.signatory_hash)
             signatory_key = RSA.importKey(signatory)
 

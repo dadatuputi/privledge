@@ -88,6 +88,8 @@ class PrivledgeShell(ExitCmd, ShellCmd):
         print("\nPublic Key Hash: {0}".format(hash))
         utils.log_message("Added key ({0}) as a new Root of Trust".format(hash), utils.Level.MEDIUM, True)
 
+        self.update_prompt()
+
     def do_debug(self, args):
         """Toggles printing of debug information"""
 
@@ -99,6 +101,8 @@ class PrivledgeShell(ExitCmd, ShellCmd):
             settings.debug = False
 
         print("Debug mode is {}".format(settings.debug))
+
+        self.update_prompt()
 
     def do_quit(self, args):
         """Quits the shell"""
@@ -194,12 +198,14 @@ class PrivledgeShell(ExitCmd, ShellCmd):
     def update_prompt(self):
         """Update the prompt based on system variables"""
 
-        debug = ""
+        indicators = []
 
+        if daemon.is_root():
+            indicators.append('root')
         if settings.debug:
-            debug = "(debug)"
+            indicators.append('debug')
 
-        self.prompt = debug + '> '
+        self.prompt = '|'.join(indicators) + '> '
 
     def display_ledger(self):
         print("Found {0} available ledgers".format(str(len(self.results))))

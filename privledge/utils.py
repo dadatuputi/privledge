@@ -84,8 +84,11 @@ def privkey_generate(save=False, filename='id_rsa', location='', keylength=2048)
 
 
 def gen_hash(message):
-    h = SHA256.new()
-    h.update(message)
+    if isinstance(message, str):
+        h = SHA256.new(message.encode('utf-8'))
+    else:
+        h = SHA256.new(message)
+
     return h.hexdigest()
 
 
@@ -96,8 +99,8 @@ def append_len(message):
 def message_decoder(obj):
     if 'message_type' in obj and 'message' in obj:
         return messaging.Message(obj['message_type'], obj['message'])
-    elif 'signature' in obj and 'pubkey' in obj:
-        return block.Block(block.BlockType[obj['blocktype']], obj['predecessor'], obj['message'], obj['message_hash'], obj['signature'], obj['signatory_hash'])
+    elif 'blocktype' in obj and 'signature' in obj:
+        return block.Block(block.BlockType[obj['blocktype']], obj['predecessor'], obj['message'], obj['signature'], obj['signatory_hash'])
     return obj
 
 

@@ -18,6 +18,9 @@ _udp_hb_thread = None
 _tcp_thread = None
 
 
+def is_root():
+    return ledger.root.message == _privkey.publickey().exportKey().decode()
+
 # Create a ledger with a new public and private key
 def create_ledger(privkey):
     global ledger, _privkey
@@ -26,7 +29,7 @@ def create_ledger(privkey):
     pubkey = privkey.publickey()
 
     # Create root block
-    root_block = block.Block(block.BlockType.add_key, None, pubkey.exportKey())
+    root_block = block.Block(block.BlockType.add_key, None, pubkey.exportKey().decode())
     root_block.sign(privkey)
 
     ledger = Ledger()
