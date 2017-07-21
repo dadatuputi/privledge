@@ -19,7 +19,10 @@ _tcp_thread = None
 
 
 def is_root():
-    return ledger.root.message == _privkey.publickey().exportKey().decode()
+    if ledger is not None and ledger.root is not None and _privkey is not None:
+        return ledger.root.message == _privkey.publickey().exportKey().decode()
+    else:
+        return False
 
 # Create a ledger with a new public and private key
 def create_ledger(privkey):
