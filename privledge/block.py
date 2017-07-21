@@ -23,6 +23,7 @@ class Block:
         self.message = message
         self.signature = signature
         self.signatory_hash = signatory_hash
+        self.ptr_previous = None
 
     @property
     def message_hash(self):
@@ -45,7 +46,7 @@ class Block:
     def body(self):
         """This generates a json string for signing; excludes signature fields"""
 
-        body = {k:v for k,v in self.__dict__.items() if k != 'signature' and k != 'signatory_hash'}
+        body = {k:v for k,v in self.__dict__.items() if k != 'signature' and k != 'signatory_hash' and k != 'ptr_previous'}
         return json.dumps(body, cls=utils.ComplexEncoder, sort_keys=True)
 
     @property
@@ -97,12 +98,13 @@ class Block:
                '\tMessage Hash: {}\n' \
                '\tSignatory Hash: {}{}'\
             .format(self.blocktype.name, ' (root)' if self._is_root else '',
-                    self.message.decode()[:60].replace('\n', '')+'...',
+                    self.message[:60].replace('\n', '')+'...',
                     self.message_hash,
                     self.signatory_hash, ' (self-signed)' if self.is_self_signed else '')
 
     def __repr__(self):
-        return json.dumps(self.__dict__, cls=utils.ComplexEncoder, sort_keys=True)
+        body = {k:v for k,v in self.__dict__.items() if k != 'ptr_previous'}
+        return json.dumps(body, cls=utils.ComplexEncoder, sort_keys=True)
 
     def repr_json(self):
         return self.__dict__
