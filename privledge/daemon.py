@@ -19,13 +19,15 @@ _tcp_thread = None
 
 
 # Create a ledger with a new public and private key
-def create_ledger(pubkey, privkey):
+def create_ledger(privkey):
     global ledger, _privkey
 
+    # Generate public key and hash from the private key
+    pubkey = privkey.publickey()
+
     # Create root block
-    pubkey_hash = utils.gen_hash(pubkey)
-    root_block = block.Block(block.BlockType.root, None, pubkey, pubkey_hash)
-    root_block.sign(privkey, pubkey_hash)
+    root_block = block.Block(block.BlockType.add_key, None, pubkey.exportKey())
+    root_block.sign(privkey)
 
     ledger = Ledger()
     ledger.append(root_block)
@@ -97,10 +99,10 @@ def join_ledger(public_key_hash, member):
                 # Hooray! We have a match
                 utils.log_message("Joined ledger {}".format(public_key_hash), force=True)
 
-                ## Sync Ledger
+                # Sync Ledger
                 messaging.ledger_sync(member)
 
-                ## Request peers
+                # Request peers
                 messaging.peer_sync(member)
 
                 # Start Listeners
@@ -114,7 +116,6 @@ def join_ledger(public_key_hash, member):
 
     except (ValueError, TypeError) as e:
         utils.log_message("Not a valid response from {0}: {1}".format(member, e))
-
 
 
 def leave_ledger():
@@ -131,6 +132,7 @@ def leave_ledger():
         message = "Not a member of a ledger, cannot leave"
 
     return message
+
 
 def discover_ledgers(ip='<broadcast>', port=settings.BIND_PORT, timeout = settings.DISCOVERY_TIMEOUT):
     print("Searching for available ledgers for {0} seconds...".format(timeout))

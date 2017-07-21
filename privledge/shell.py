@@ -5,23 +5,53 @@ from privledge import daemon
 
 import socket
 import json
+import os
 from os import system
 
 
-class PrivledgeShell(Cmd):
+# Helper class for exit functionality
+class ExitCmd(Cmd):
+    @staticmethod
+    def can_exit():
+        return True
+
+    def onecmd(self, line):
+        r = super(ExitCmd, self).onecmd(line)
+        if r and (self.can_exit() or input('exit anyway ? (yes/no):') == 'yes'):
+            return True
+        return False
+
+    @staticmethod
+    def do_exit(args):
+        return True
+
+    @staticmethod
+    def help_exit():
+        print("Exit the interpreter.")
+
+
+# Helper class for shell command functionality
+class ShellCmd(Cmd, object):
+    @staticmethod
+    def do_shell(s):
+        os.system(s)
+
+    @staticmethod
+    def help_shell():
+        print("Execute Shell Commands")
+
+
+# Base Privledge Shell Class
+class PrivledgeShell(ExitCmd, ShellCmd):
 
     results = dict()
-
-
 
     def __init__(self):
         super(PrivledgeShell, self).__init__()
 
         # Start the command loop - these need to be the last lines in the initializer
-        self.prompt = '> '
+        self.update_prompt()
         self.cmdloop('Welcome to Privledge Shell...')
-
-
 
     def do_init(self, args):
         """Initialize the ledger with a provided Root of Trust (RSA Public Key)"""
@@ -37,31 +67,26 @@ class PrivledgeShell(Cmd):
 
                 if len(args_list) == 1:
                     # Generate a RSA key in memory
-                    key = utils.generate_openssh_key()
+                    privkey = utils.privkey_generate()
                 else:
                     # Generate and save RSA key
-                    key = utils.generate_openssh_key(True, args_list[0])
+                    privkey = utils.privkey_generate(True, args_list[0])
 
             else:
                 # Try to import provided key
-                key = utils.get_key(args)
+                privkey = utils.get_key(args)
 
-                if key is None:
+                if privkey is None:
                     print("Could not import the provided key")
                     return
 
         # If we made it this far we have a valid key
         # Store generated key in our daemon for now
-        #try:
-        daemon.create_ledger(key.publickey().exportKey(), key.exportKey())
+        daemon.create_ledger(privkey)
         hash = daemon.ledger.id
 
         print("\nPublic Key Hash: {0}".format(hash))
         utils.log_message("Added key ({0}) as a new Root of Trust".format(hash), utils.Level.MEDIUM, True)
-        #except Exception as err:
-        #    print("Invalid key: "+ str(err))
-
-
 
     def do_debug(self, args):
         """Toggles printing of debug information"""
@@ -75,17 +100,15 @@ class PrivledgeShell(Cmd):
 
         print("Debug mode is {}".format(settings.debug))
 
-
-
     def do_quit(self, args):
         """Quits the shell"""
+
         print("Quitting")
         raise SystemExit
 
-
-
     def do_list(self, args):
-        """Attempt to find existing ledgers. Provide an ip address, otherwise the local broadcast will be used. You may force an update by entering 'update'"""
+        """Attempt to find existing ledgers. Provide an ip address, otherwise the local broadcast will be used.
+        You may force an update by entering 'update'"""
 
         # No args provided
         if len(args) == 0:
@@ -116,14 +139,12 @@ class PrivledgeShell(Cmd):
         # Process results
         self.display_ledger()
 
-
-
     def do_join(self, args):
         """Join a ledger previously identified by the list command"""
 
         # Check for no arguments
         if len(args) == 0:
-            print("You must provide a ledger number")
+            print("You must provide a ledger number. Use the `list` command to show ledger numbers.")
             return
 
         # Check for a valid argument (is integer)
@@ -141,17 +162,17 @@ class PrivledgeShell(Cmd):
         # Pass the daemon the hash and members
         daemon.join_ledger(list(self.results.keys())[number-1], list(list(self.results.values())[number-1])[0])
 
-
     def do_leave(self, args):
         """Leave the currently joined ledger"""
-        print(daemon.leave_ledger())
 
+        print(daemon.leave_ledger())
 
     def do_status(self, args):
         """Show current ledger status"""
+
         if daemon.ledger is not None:
             # Print ledger status
-            print("You are a member of ledger {0} with {1} peers.".format(daemon.ledger.id,
+            print("You are a member of ledger {0} and connected to {1} peers.".format(daemon.ledger.id,
                                                                                 len(daemon.peers)))
             # Detailed
             if args.lower() == 'detail':
@@ -163,13 +184,22 @@ class PrivledgeShell(Cmd):
 
     def do_ledger(self, args):
         """Print the ledger"""
-        listything = daemon.ledger.to_list()
-        print(json.dumps(listything, cls=utils.ComplexEncoder))
 
-    def default(self, args):
-        """Passes unrecognized commands through to the operating system"""
-        system(args)
+        ledger_list = daemon.ledger.to_list()
 
+        # Print each block
+        for block in ledger_list:
+            print(block)
+
+    def update_prompt(self):
+        """Update the prompt based on system variables"""
+
+        debug = ""
+
+        if settings.debug:
+            debug = "(debug)"
+
+        self.prompt = debug + '> '
 
     def display_ledger(self):
         print("Found {0} available ledgers".format(str(len(self.results))))
@@ -185,7 +215,6 @@ class PrivledgeShell(Cmd):
                 else:
                     member = ''
                 print("{0} | {4}: ({1} members) {2} {3}".format(i, len(self.results[ledger]), ledger, member, list(self.results[ledger])[0][0]))
-
 
     def emptyline(self):
         pass

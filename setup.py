@@ -1,5 +1,6 @@
 from setuptools import setup
 
+
 def readme():
     with open('README.md') as f:
         return f.read()
@@ -15,8 +16,9 @@ setup(name='privledge',
           'sshpubkeys',
           'python-daemon',
           'termcolor',
+          'Crypto',
       ],
-      entry_points = {
+      entry_points={
           'console_scripts': ['pls=privledge.main:main'],
       },
       zip_safe=False)
