@@ -1,31 +1,24 @@
-from privledge import utils
-from privledge import block
 from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_PSS
-from Crypto.Hash import SHA
-import json
+from Crypto.Hash import SHA256
 
-class Ledger():
 
+class Ledger:
 
     def __init__(self):
         self.len = 0
         self.tail = None
         self.root = None
 
-
-
     @property
     def id(self):
-        return self.root.pubkey_hash
+        return self.root.message_hash
 
-
-
-    def find_key(self, hash):
+    def find_message(self, hash):
         current = self.tail
 
         while current:
-            if current.pubkey_hash == hash and current.type == block.BlockType.root or current.type == block.BlockType.trusted:
+            if current.message_hash == hash:
                 return current
             else:
                 current = current.previous
@@ -47,11 +40,11 @@ class Ledger():
                                  self.tail.hash)
 
             # Find the signatory key in our ledger
-            signatory = self.find_key(block.signatory_hash)
+            signatory = self.find_message(block.signatory_hash)
             signatory_key = RSA.importKey(signatory)
 
             # Verify the signature is valid
-            h = SHA.new(block.body)
+            h = SHA256.new(block.body)
             verifier = PKCS1_PSS.new(signatory_key)
             if not verifier.verify(h, block.signature):
                 raise ValueError('The block signature is not valid', block.signature, signatory)

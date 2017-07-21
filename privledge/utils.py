@@ -4,7 +4,7 @@ from privledge import settings
 from privledge import messaging
 from privledge import block
 from Crypto.PublicKey import RSA
-from Crypto.Hash import SHA
+from Crypto.Hash import SHA256
 
 import os.path
 import json
@@ -17,7 +17,7 @@ class Level(Enum):
     HIGH = 1
 
 
-def log_message(message, priority = Level.LOW, force = False):
+def log_message(message, priority=Level.LOW, force=False):
     # Uses termcolor: https://pypi.python.org/pypi/termcolor
     color = 'green'
     background = 'on_grey'
@@ -34,6 +34,7 @@ def log_message(message, priority = Level.LOW, force = False):
 
     if settings.debug or force:
         cprint(message, color, background)
+
 
 def get_key(message=None):
 
@@ -67,8 +68,7 @@ def get_key(message=None):
     return None
 
 
-
-def generate_openssh_key(save=False, filename='id_rsa', location='', keylength=2048):
+def privkey_generate(save=False, filename='id_rsa', location='', keylength=2048):
     log_message("Generating {0}-bit RSA key".format(keylength))
 
     key = RSA.generate(keylength)
@@ -76,14 +76,15 @@ def generate_openssh_key(save=False, filename='id_rsa', location='', keylength=2
     if save:
         with open("{0}{1}".format(location, filename), 'w') as content_file:
             chmod("{0}{1}".format(location, filename), 0o0600)
-            content_file.write(key.exportKey('PEM'))
+            content_file.write(key.exportKey())
         with open("{0}{1}.pub".format(location, filename), 'w') as content_file:
-            content_file.write(key.publickey().exportKey('OpenSSH'))
+            content_file.write(key.publickey().exportKey())
 
     return key
 
+
 def gen_hash(message):
-    h = SHA.new()
+    h = SHA256.new()
     h.update(message)
     return h.hexdigest()
 
@@ -91,11 +92,12 @@ def gen_hash(message):
 def append_len(message):
     return str(len(message)).zfill(settings.MSG_SIZE_BYTES) + message
 
+
 def message_decoder(obj):
     if 'message_type' in obj and 'message' in obj:
         return messaging.Message(obj['message_type'], obj['message'])
     elif 'signature' in obj and 'pubkey' in obj:
-        return block.Block(block.BlockType[obj['blocktype']], obj['predecessor'], obj['pubkey'], obj['pubkey_hash'], obj['signature'], obj['signatory_hash'])
+        return block.Block(block.BlockType[obj['blocktype']], obj['predecessor'], obj['message'], obj['message_hash'], obj['signature'], obj['signatory_hash'])
     return obj
 
 
@@ -107,4 +109,3 @@ class ComplexEncoder(json.JSONEncoder):
             return obj.repr_json()
         else:
             return json.JSONEncoder.default(self, obj)
-

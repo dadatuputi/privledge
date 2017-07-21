@@ -1,6 +1,7 @@
 from privledge import settings
 from privledge import PrivledgeShell
 
+
 # STARTUP
 def main():
     # Initialize any global variables
