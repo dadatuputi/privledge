@@ -205,11 +205,11 @@ class TCPConnectionThread(threading.Thread):
 
         message = json.loads(message, object_hook=utils.message_decoder)
 
-        ## JOIN LEDGER ##
+        # JOIN LEDGER
         if message.message_type == settings.MSG_TYPE_JOIN:
             if message.message == daemon.ledger.id:
                 # Respond with success and the root key
-                response = Message(settings.MSG_TYPE_SUCCESS, daemon.ledger.root.pubkey).prep_tcp()
+                response = Message(settings.MSG_TYPE_SUCCESS, daemon.ledger.root.message).prep_tcp()
                 self._respond(response)
                 return
             else:

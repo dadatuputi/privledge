@@ -129,7 +129,7 @@ class PrivledgeShell(ExitCmd, ShellCmd):
 
             # Check for a valid IP
             try:
-                socket.inet_aton(ip)
+                socket.inet_pton(socket.AF_INET, ip)
             except socket.error:
                 print("You entered an invalid IP address")
                 return
