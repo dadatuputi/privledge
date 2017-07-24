@@ -24,6 +24,7 @@ def is_root():
     else:
         return False
 
+
 # Create a ledger with a new public and private key
 def create_ledger(privkey):
     global ledger, _privkey
@@ -97,8 +98,8 @@ def join_ledger(public_key_hash, member):
 
         message = json.loads(thread.message, object_hook=utils.message_decoder)
 
-        if message.message_type == settings.MSG_TYPE_SUCCESS:
-            key = utils.get_key(message.message)
+        if message.msg_type == settings.MSG_TYPE_SUCCESS:
+            key = utils.get_key(message.msg)
             key_hash = utils.gen_hash(key.publickey().exportKey())
 
             if public_key_hash == key_hash:
@@ -118,7 +119,7 @@ def join_ledger(public_key_hash, member):
                 raise ValueError('Public key returned does not match requested hash: {0}'.format(key_hash))
 
         else:
-            raise ValueError('Response was not as expected: {0}'.format(message.message_type))
+            raise ValueError('Response was not as expected: {0}'.format(message.msg_type))
 
     except (ValueError, TypeError) as e:
         utils.log_message("Not a valid response from {0}: {1}".format(member, e))
@@ -161,16 +162,16 @@ def discover_ledgers(ip='<broadcast>', port=settings.BIND_PORT, timeout = settin
             try:
                 message = json.loads(data.decode(), object_hook=utils.message_decoder)
 
-                if message.message_type == settings.MSG_TYPE_SUCCESS:
-                    utils.log_message("Discovered ledger {0} at {1}".format(message.message, address))
+                if message.msg_type == settings.MSG_TYPE_SUCCESS:
+                    utils.log_message("Discovered ledger {0} at {1}".format(message.msg, address))
 
                     # Received response
                     # Is the hash already in our list?
-                    if message.message not in results:
+                    if message.msg not in results:
                         # If hash isn't in the list, create a new set and add address to it
-                        results[message.message] = set()
+                        results[message.msg] = set()
                     # Since there's already a set for our hash, we add to it
-                    results[message.message].add(address)
+                    results[message.msg].add(address)
 
             except:
                 utils.log_message("Malformed response from {0}: {1}".format(data, address))
