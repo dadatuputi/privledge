@@ -14,9 +14,9 @@ lock = threading.Lock()
 
 # Message Class #
 class Message:
-    def __init__(self, message_type, message=None):
-        self.message_type = message_type
-        self.message = message
+    def __init__(self, msg_type, msg=None):
+        self.msg_type = msg_type
+        self.msg = msg
 
     def __repr__(self):
         return json.dumps(self, cls=utils.ComplexEncoder)
@@ -28,6 +28,8 @@ class Message:
         return self.__dict__
 
 
+# Send a request to the target with the block hash
+# Target should return all subsequent blocks not including source of block_hash
 def ledger_sync(target, block_hash=None):
     utils.log_message("Requesting ledger from {0}".format(target))
 
@@ -229,7 +231,7 @@ class TCPConnectionThread(threading.Thread):
 
         elif message.message_type == settings.MSG_TYPE_LEDGER:
             # Respond with the ledger
-            ledger_list = daemon.ledger.to_list(message.message)
+            ledger_list = daemon.ledger.slice_ledger(message.message)
 
             if ledger_list is None:
                 self._respond_error()
@@ -299,10 +301,30 @@ class UDPListener(threading.Thread):
 
                 elif message.message_type == settings.MSG_TYPE_HB:
                     # Heartbeat Message
-                    if message.message == daemon.ledger.id:
+                    if "ledger" in message.message and message.message["ledger"] == daemon.ledger.id:
+
+                        # Add the source address and port to our list of peers and update the date
+                        daemon.peers[(addr[0], settings.BIND_PORT)] = datetime.now()
+
+                        # Possible Scenarios:
+                        # Heartbeat tail is same as local tail: Do nothing (in sync)
+                        # Heartbeat tail is in our ledger: Do nothing (out of sync)
+                        # Heartbeat tail is not in our ledger: Synchronize with peer (out of sync)
+                        if "tail" in message.message:
+                            tail = message.message["tail"]
+
+                            # Check for presence of heartbeat tail in our ledger
+                            idx, blocks = daemon.ledger.find_by_message(tail)
+
+                            # If heartbeat tail is in our ledger, do nothing
+                            # If heartbeat tail isn't in our ledger, synchronize with peer
+                            if len(idx) <= 0:
+                                ledger_sync((addr[0], settings.BIND_PORT), )
+
+
+
                         with lock:
                             utils.log_message("Received heartbeat from {0}".format(addr))
-                        daemon.peers[(addr[0], settings.BIND_PORT)] = datetime.now()
 
         discovery_socket.close()
 
@@ -330,9 +352,13 @@ class UDPHeartbeat(threading.Thread):
 
                     del daemon.peers[target]
                 else:
-                    # Send heartbeat with root id to peers
+                    # Send heartbeat with root id and tail id to peers
                     s = socket(AF_INET, SOCK_DGRAM)
-                    message = Message(settings.MSG_TYPE_HB, daemon.ledger.id).__repr__()
+
+                    message_body = {"ledger": daemon.ledger.id,
+                                    "tail": daemon.ledger.tail.message_hash}
+
+                    message = Message(settings.MSG_TYPE_HB, message_body).__repr__()
 
                     s.sendto(message.encode(), target)
                     utils.log_message("Heartbeat sent to {0}".format(target))

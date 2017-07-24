@@ -1,30 +1,33 @@
-from enum import Enum
-import json
 import base64
-from Crypto.Signature import PKCS1_v1_5
+import json
+from enum import Enum
+
 from Crypto.Hash import SHA256
+from Crypto.Signature import PKCS1_v1_5
+from Crypto.PublicKey import RSA
+
+
 from privledge import utils
 
 
 class BlockType(Enum):
-    add_key = 0             # message is public key
-    revoke_key = 1          # message is public key
-    text = 2                # message is text
+    add_key = 0  # message is public key
+    revoke_key = 1  # message is public key
+    text = 2  # message is text
 
     def repr_json(self):
         return self.name
 
 
 class Block:
-
     def __init__(self, blocktype, predecessor, message, signature=None, signatory_hash=None):
         self.blocktype = blocktype
         self.predecessor = predecessor
         self.message = message
         self.signature = signature
         self.signatory_hash = signatory_hash
-        self.ptr_previous = None
 
+    # message_hash is used primarily for key lookup
     @property
     def message_hash(self):
         if self.blocktype is BlockType.text:
@@ -46,7 +49,8 @@ class Block:
     def body(self):
         """This generates a json string for signing; excludes signature fields"""
 
-        body = {k:v for k,v in self.__dict__.items() if k != 'signature' and k != 'signatory_hash' and k != 'ptr_previous'}
+        body = {k: v for k, v in self.__dict__.items() if
+                k != 'signature' and k != 'signatory_hash' and k != 'ptr_previous'}
         return json.dumps(body, cls=utils.ComplexEncoder, sort_keys=True)
 
     @property
@@ -72,7 +76,7 @@ class Block:
         pubkey_hash = utils.gen_hash(pubkey.exportKey())
 
         # Sign the block body hash
-        h = SHA256.new(self.body.encode())
+        h = SHA256.new(self.body.encode('utf-8'))
         signer = PKCS1_v1_5.new(privkey)
 
         # Set the block signature values
@@ -89,21 +93,25 @@ class Block:
     def validate(self, pubkey):
         """Validate this block's signature with the supplied public key"""
 
+        # If pubkey is a string, turn it into a key object
+        if isinstance(pubkey, str):
+            pubkey = RSA.importKey(pubkey)
+
         signer = PKCS1_v1_5.new(pubkey)
-        return signer.verify(SHA256.new(self.body.encode()), self.signature_decoded)
+        return signer.verify(SHA256.new(self.body.encode('utf-8')), self.signature_decoded)
 
     def __str__(self):
         return '\tType: {}{}\n' \
                '\tMessage: {}\n' \
                '\tMessage Hash: {}\n' \
-               '\tSignatory Hash: {}{}'\
+               '\tSignatory Hash: {}{}' \
             .format(self.blocktype.name, ' (root)' if self._is_root else '',
-                    self.message[:60].replace('\n', '')+'...',
+                    self.message[:60].replace('\n', '') + '...',
                     self.message_hash,
                     self.signatory_hash, ' (self-signed)' if self.is_self_signed else '')
 
     def __repr__(self):
-        body = {k:v for k,v in self.__dict__.items() if k != 'ptr_previous'}
+        body = {k: v for k, v in self.__dict__.items() if k != 'ptr_previous'}
         return json.dumps(body, cls=utils.ComplexEncoder, sort_keys=True)
 
     def repr_json(self):

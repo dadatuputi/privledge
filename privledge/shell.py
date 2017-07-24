@@ -86,21 +86,25 @@ class PrivledgeShell(ExitCmd, ShellCmd):
         hash = daemon.ledger.id
 
         print("\nPublic Key Hash: {0}".format(hash))
-        utils.log_message("Added key ({0}) as a new Root of Trust".format(hash), utils.Level.MEDIUM, True)
+        utils.log_message("Added key ({0}) as a new Root of Trust".format(hash), utils.Level.HIGH)
 
         self.update_prompt()
 
     def do_debug(self, args):
-        """Toggles printing of debug information"""
+        """Sets printing of debug information, valid options are 0-2"""
 
-        if len(args) == 0:
-            settings.debug = not settings.debug
-        elif args.lower() in ['true', 'on', '1']:
-            settings.debug = True
-        elif args.lower() in ['false', 'off', '0']:
-            settings.debug = False
+        try:
+            number = int(args)
 
-        print("Debug mode is {}".format(settings.debug))
+            # Check for valid number
+            if number < 0 or number > len(self.results):
+                raise ValueError("Out of Bounds Error")
+            else:
+                settings.debug = number
+        except ValueError as e:
+            print("{0}\nYou did not provide a valid number (0-2): '{1}'".format(e, args))
+
+        print("Debug mode is set to {}".format(settings.debug))
 
         self.update_prompt()
 
@@ -118,7 +122,7 @@ class PrivledgeShell(ExitCmd, ShellCmd):
         if len(args) == 0:
             if len(self.results) > 0:
                 # Look for cached ledger list
-                utils.log_message("Using cached results; use 'list update' to force an update.", force=True)
+                utils.log_message("Using cached results; use 'list update' to force an update.", utils.Level.HIGH)
                 self.display_ledger()
                 return
             else:
@@ -202,8 +206,8 @@ class PrivledgeShell(ExitCmd, ShellCmd):
 
         if daemon.is_root():
             indicators.append('root')
-        if settings.debug:
-            indicators.append('debug')
+        if settings.debug > 0:
+            indicators.append('debug({})'.format(settings.debug))
 
         self.prompt = '|'.join(indicators) + '> '
 
