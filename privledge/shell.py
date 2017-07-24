@@ -97,7 +97,7 @@ class PrivledgeShell(ExitCmd, ShellCmd):
             number = int(args)
 
             # Check for valid number
-            if number < 0 or number > len(self.results):
+            if number < 0 or number > 2:
                 raise ValueError("Out of Bounds Error")
             else:
                 settings.debug = number
