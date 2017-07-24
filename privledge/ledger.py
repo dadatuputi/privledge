@@ -1,37 +1,68 @@
-from Crypto.PublicKey import RSA
-from Crypto.Signature import PKCS1_PSS
-from Crypto.Hash import SHA256
+from privledge.block import BlockType
 
 
 class Ledger:
-
     def __init__(self):
-        self.len = 0
         self.tail = None
         self.root = None
+        self._list = []
 
     @property
     def id(self):
-        return self.root.message_hash
+        if self.root is not None:
+            return self.root.message_hash
+        else:
+            return None
 
-    def find_key(self, hash):
-        current = self.tail
+    def slice_ledger(self, block_hash = None):
+        # Return the whole list if no specific block hash is given
+        if block_hash is None:
+            return self._list
+        else:
+            # Step through the entire ledger in reverse order
+            for i, block in reversed(self._list):
+                # If we have a match, return the sublist
+                if block.hash == block_hash:
+                    return self._list[i+1:]
 
-        while current:
-            if current.message_hash == hash:
-                return current
+            # The requested block isn't in our ledger! Return None
+            return None
+
+    def find_by_message(self, message_hash):
+        # Walk backward through the list
+        end = len(self._list) - 1
+
+        # Prepare return lists
+        idx = []
+        blocks = []
+
+        while end >= 0:
+            if self._list[end].message_hash == message_hash:
+                idx.append(end)
+                blocks.append(self._list[end])
             else:
-                current = current.previous
+                end -= 1
 
-        return ValueError('The key was not found in the ledger', hash)
+        # Return none if we failed to find any message, otherwise return the lists
+        if len(idx) is 0 and len(blocks) is 0:
+            return None
+        else:
+            return idx, blocks
 
     def append(self, block):
-
-        # Adding root?
+        # Adding root (must be self-signed and add_key)
         if block.predecessor is None and self.root is None:
-            self.root = block
 
-        # Do some checks to make sure block is correctly formed
+            # Check the block has the right type and is self-signed
+            if block.blocktype is not BlockType.add_key or not block.validate(block.message):
+                raise ValueError('Cannot add root block unless it is self-signed and of add_key blocktype',
+                                 block.blocktype)
+
+            self.root = block
+            self.tail = block
+            self._list.append(block)
+
+        # Do some checks to make sure block is valid
         else:
 
             # Is this block's predecessor the last block in our chain?
@@ -39,33 +70,25 @@ class Ledger:
                 raise ValueError('Predecessor hash does not match the last accepted block', block.predecessor,
                                  self.tail.hash)
 
-            # Is this block properly signed by an accepted key on our chain?
-            signatory = self.find_message(block.signatory_hash)
-            signatory_key = RSA.importKey(signatory)
-
-            # Verify the signature is valid
-            h = SHA256.new(block.body)
-            verifier = PKCS1_PSS.new(signatory_key)
-            if not verifier.verify(h, block.signature):
-                raise ValueError('The block signature is not valid', block.signature, signatory)
+            # Check that block signer (signatory_hash) is present on our ledger and valid
+            if not self.validate_block(block):
+                raise ValueError('The block signature is not valid', block.signature)
 
         # Hash is correct, Signatory Exists, Signature is Valid: Add to ledger!
-        block.previous = self.tail
+        self._list.append(block)
         self.tail = block
-        self.len += 1
 
-    def to_list(self, predecessor=None):
-        blocklist = []
-        self.reverse_list(blocklist, self.tail, predecessor)
-        return blocklist
+    # Ensure that the provided hash is valid and has not been revoked
+    def validate_block(self, block):
+        idx, signatory = self.find_by_message(block.signatory_hash)
 
-    def reverse_list(self, list, item, predecessor):
-        if item.predecessor is None and predecessor is not None:
-            # We got a bogus predessor, return None list
-            list = None
-        elif item.predecessor == predecessor:
-            list.append(item)
+        # Check that the most recent block was of type add_key
+        if signatory is not None and \
+                len(signatory) > 0 and \
+                signatory[0].blocktype is BlockType.add_key:
+            return block.validate(signatory[0].message)
         else:
-            self.reverse_list(list, item.previous, predecessor)
-            if list is not None:
-                list.append(item)
+            return False
+
+    def __len__(self):
+        return len(self._list)

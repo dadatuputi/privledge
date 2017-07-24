@@ -12,27 +12,28 @@ from os import chmod
 
 
 class Level(Enum):
-    LOW = 3
-    MEDIUM = 2
+    LOW = 2
     HIGH = 1
+    FORCE = 0
 
 
-def log_message(message, priority=Level.LOW, force=False):
-    # Uses termcolor: https://pypi.python.org/pypi/termcolor
-    color = 'green'
-    background = 'on_grey'
+def log_message(message, debug=Level.LOW):
 
-    if priority == Level.LOW:
+    if settings.debug >= debug.value:
+        # Uses termcolor: https://pypi.python.org/pypi/termcolor
         color = 'green'
         background = 'on_grey'
-    elif priority == Level.MEDIUM:
-        color = 'yellow'
-        background = 'on_grey'
-    elif priority == Level.HIGH:
-        color = 'red'
-        background = 'on_white'
 
-    if settings.debug or force:
+        if debug == Level.LOW:
+            color = 'green'
+            background = 'on_grey'
+        elif debug == Level.HIGH:
+            color = 'yellow'
+            background = 'on_grey'
+        elif debug == Level.FORCE:
+            color = 'red'
+            background = 'on_white'
+
         cprint(message, color, background)
 
 
