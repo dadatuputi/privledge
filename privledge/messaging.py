@@ -44,10 +44,10 @@ def ledger_sync(target, block_hash=None):
     if daemon.ledger is None:
         daemon.ledger = ledger.Ledger()
 
-    for block in message.message:
+    for block in message.msg:
         daemon.ledger.append(block)
 
-    utils.log_message("Successfully synchronized {} block(s) from {}".format(len(message.message), target))
+    utils.log_message("Successfully synchronized {} block(s) from {}".format(len(message.msg), target))
 
 
 def peer_sync(target):
@@ -60,12 +60,12 @@ def peer_sync(target):
 
     message = json.loads(thread.message, object_hook=utils.message_decoder)
 
-    for peer in message.message:
+    for peer in message.msg:
         daemon.peers[peer] = datetime.now()
 
     daemon.peers[target] = datetime.now()
 
-    utils.log_message("Successfully synchronized {} peer(s) from {}".format(len(message.message), target))
+    utils.log_message("Successfully synchronized {} peer(s) from {}".format(len(message.msg), target))
 
 
 # TCP Thread Classes #
@@ -208,8 +208,8 @@ class TCPConnectionThread(threading.Thread):
         message = json.loads(message, object_hook=utils.message_decoder)
 
         # JOIN LEDGER
-        if message.message_type == settings.MSG_TYPE_JOIN:
-            if message.message == daemon.ledger.id:
+        if message.msg_type == settings.MSG_TYPE_JOIN:
+            if message.msg == daemon.ledger.id:
                 # Respond with success and the root key
                 response = Message(settings.MSG_TYPE_SUCCESS, daemon.ledger.root.message).prep_tcp()
                 self._respond(response)
@@ -217,7 +217,7 @@ class TCPConnectionThread(threading.Thread):
             else:
                 self._respond_error()
                 return
-        elif message.message_type == settings.MSG_TYPE_PEER:
+        elif message.msg_type == settings.MSG_TYPE_PEER:
             # Respond with list of peers
             peer_list = list(daemon.peers.keys())
 
@@ -229,9 +229,9 @@ class TCPConnectionThread(threading.Thread):
             self._respond(response)
             return
 
-        elif message.message_type == settings.MSG_TYPE_LEDGER:
+        elif message.msg_type == settings.MSG_TYPE_LEDGER:
             # Respond with the ledger
-            ledger_list = daemon.ledger.slice_ledger(message.message)
+            ledger_list = daemon.ledger.slice_ledger(message.msg)
 
             if ledger_list is None:
                 self._respond_error()
@@ -292,16 +292,16 @@ class UDPListener(threading.Thread):
             else:
                 message = json.loads(data.decode(), object_hook=utils.message_decoder)
                 # Decode Message Type
-                if message.message_type == settings.MSG_TYPE_DISCOVER:
+                if message.msg_type == settings.MSG_TYPE_DISCOVER:
                     # Discovery Message
                     with lock:
                         utils.log_message("Received discovery inquiry from {0}, responding...".format(addr))
                     response = Message(settings.MSG_TYPE_SUCCESS, daemon.ledger.id).__repr__()
                     discovery_socket.sendto(response.encode(), addr)
 
-                elif message.message_type == settings.MSG_TYPE_HB:
+                elif message.msg_type == settings.MSG_TYPE_HB:
                     # Heartbeat Message
-                    if "ledger" in message.message and message.message["ledger"] == daemon.ledger.id:
+                    if "ledger" in message.msg and message.msg["ledger"] == daemon.ledger.id:
 
                         # Add the source address and port to our list of peers and update the date
                         daemon.peers[(addr[0], settings.BIND_PORT)] = datetime.now()
@@ -310,8 +310,8 @@ class UDPListener(threading.Thread):
                         # Heartbeat tail is same as local tail: Do nothing (in sync)
                         # Heartbeat tail is in our ledger: Do nothing (out of sync)
                         # Heartbeat tail is not in our ledger: Synchronize with peer (out of sync)
-                        if "tail" in message.message:
-                            tail = message.message["tail"]
+                        if "tail" in message.msg:
+                            tail = message.msg["tail"]
 
                             # Check for presence of heartbeat tail in our ledger
                             idx, blocks = daemon.ledger.find_by_message(tail)
