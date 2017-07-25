@@ -1,5 +1,6 @@
 import base64
 import json
+import textwrap
 from enum import Enum
 
 from Crypto.Hash import SHA256
@@ -30,20 +31,16 @@ class Block:
     # message_hash is used primarily for key lookup
     @property
     def message_hash(self):
-        if self.blocktype is BlockType.text:
-            return None
-        else:
-            return utils.gen_hash(self.message)
+        return utils.gen_hash(self.message)
 
     @property
     def hash(self):
-        return SHA256.new(self.__repr__().encode('utf-8'))
+        return utils.gen_hash(self.__repr__())
 
     @property
     def hash_body(self):
         """Hash everything but the signature and signatory hash"""
-
-        return SHA256.new(self.body.encode('utf-8'))
+        return utils.gen_hash(self.body)
 
     @property
     def body(self):
@@ -102,13 +99,17 @@ class Block:
 
     def __str__(self):
         return '\tType: {}{}\n' \
+               '\tPredecessor: {}\n' \
                '\tMessage: {}\n' \
                '\tMessage Hash: {}\n' \
-               '\tSignatory Hash: {}{}' \
+               '\tSignatory Hash: {}{}\n' \
+               '\tBlock Hash: {}' \
             .format(self.blocktype.name, ' (root)' if self._is_root else '',
-                    self.message[:60].replace('\n', '') + '...',
-                    self.message_hash,
-                    self.signatory_hash, ' (self-signed)' if self.is_self_signed else '')
+                    'None' if self._is_root else textwrap.shorten(self.predecessor, width=100, placeholder="..."),
+                    textwrap.shorten(self.message, width=100, placeholder="..."),
+                    textwrap.shorten(self.message_hash, width=100, placeholder="..."),
+                    textwrap.shorten(self.signatory_hash, width=100, placeholder="..."), ' (self-signed)' if self.is_self_signed else '',
+                    textwrap.shorten(self.hash, width=100, placeholder="..."),)
 
     def __repr__(self):
         body = {k: v for k, v in self.__dict__.items() if k != 'ptr_previous'}

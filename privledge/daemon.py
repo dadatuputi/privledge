@@ -12,6 +12,8 @@ import socket
 
 ledger = None
 peers = dict()
+disc_ledgers = dict()
+disc_peers = set()
 _privkey = None
 _udp_thread = None
 _udp_hb_thread = None
@@ -52,30 +54,32 @@ def ledger_listeners(start):
         _udp_thread = messaging.UDPListener(settings.BIND_IP, settings.BIND_PORT)
         _udp_thread.start()
 
-        # Spawn UDP Heartbeat thread
-        _udp_hb_thread = messaging.UDPHeartbeat()
-        _udp_hb_thread.start()
-
         # Spawn TCP Listener thread
         _tcp_thread = messaging.TCPListener(settings.BIND_IP, settings.BIND_PORT)
         _tcp_thread.start()
 
+        # Spawn UDP Heartbeat thread
+        _udp_hb_thread = messaging.UDPHeartbeat()
+        _udp_hb_thread.start()
+
     else:
         # Kill udp listener thread
+        utils.log_message("Killing UDP Listening Thread...")
         _udp_thread.stop.set()
         _udp_thread.join()
         _udp_thread = None
 
-        # Kill udp hb thread
-        _udp_hb_thread.stop.set()
-        _udp_hb_thread.join()
-        _udp_hb_thread = None
-
-
         # Kill tcp listener thread
+        utils.log_message("Killing TCP Listening Thread...")
         _tcp_thread.stop.set()
         _tcp_thread.join()
         _tcp_thread = None
+
+        # Kill udp hb thread
+        utils.log_message("Killing Heartbeat Thread...")
+        _udp_hb_thread.stop.set()
+        _udp_hb_thread.join()
+        _udp_hb_thread = None
 
 
 # Join a ledger with a specified public key
@@ -104,7 +108,7 @@ def join_ledger(public_key_hash, member):
 
             if public_key_hash == key_hash:
                 # Hooray! We have a match
-                utils.log_message("Joined ledger {}".format(public_key_hash), force=True)
+                utils.log_message("Joined ledger {}".format(public_key_hash), utils.Level.FORCE)
 
                 # Sync Ledger
                 messaging.ledger_sync(member)
@@ -141,9 +145,9 @@ def leave_ledger():
     return message
 
 
-def discover_ledgers(ip='<broadcast>', port=settings.BIND_PORT, timeout = settings.DISCOVERY_TIMEOUT):
-    print("Searching for available ledgers for {0} seconds...".format(timeout))
-    utils.log_message("Starting Ledger Discovery")
+def discover(ip='<broadcast>', port=settings.BIND_PORT, timeout = settings.DISCOVERY_TIMEOUT):
+
+    utils.log_message("Starting Discovery for {} seconds".format(timeout))
 
     results = dict()
 
@@ -152,7 +156,10 @@ def discover_ledgers(ip='<broadcast>', port=settings.BIND_PORT, timeout = settin
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
     message = messaging.Message(settings.MSG_TYPE_DISCOVER).__repr__()
-    s.sendto(message.encode(), (ip, port))
+    s.connect((ip, port))
+    ip_self = s.getsockname()[0]
+    s.send(message.encode())
+
     try:
         # Listen for responses for 10 seconds
         s.settimeout(timeout)
@@ -163,9 +170,12 @@ def discover_ledgers(ip='<broadcast>', port=settings.BIND_PORT, timeout = settin
                 message = json.loads(data.decode(), object_hook=utils.message_decoder)
 
                 if message.msg_type == settings.MSG_TYPE_SUCCESS:
-                    utils.log_message("Discovered ledger {0} at {1}".format(message.msg, address))
+                    utils.log_message("Discovered ledger {0} at {1}".format(message.msg, address), utils.Level.MEDIUM)
 
                     # Received response
+                    # Is the response our own ledger?
+                    if address[0] == ip_self:
+                        continue
                     # Is the hash already in our list?
                     if message.msg not in results:
                         # If hash isn't in the list, create a new set and add address to it
