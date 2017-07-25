@@ -2,6 +2,7 @@ from cmd import Cmd
 from privledge import utils
 from privledge import settings
 from privledge import daemon
+from datetime import datetime
 
 import socket
 import json
@@ -113,9 +114,7 @@ class PrivledgeShell(ExitCmd, ShellCmd):
         raise SystemExit
 
     def do_discover(self, args):
-        """Attempt to discover other ledgers. Use with 'peers' to discover peers on the same ledger.\
-        You may provide an ip address, otherwise the local broadcast will be used. You may display cached results with\
-        the 'cached' argument."""
+        """Attempt to discover other ledgers. Use with 'peers' to discover peers on the same ledger and add them to your peer list. You may provide an ip address, otherwise the local broadcast will be used. You may display cached results with the 'cached' argument."""
 
         args = args.lower().strip().split()
 
@@ -158,10 +157,19 @@ class PrivledgeShell(ExitCmd, ShellCmd):
         if peers:
             print("Found {} peers".format(str(len(daemon.disc_peers))))
             if len(daemon.disc_peers) > 0:
+                added_peer_count = 0
                 for idx, addr in enumerate(daemon.disc_peers):
                     is_peer = (addr[0], settings.BIND_PORT) in daemon.peers
                     print("{} | {}{}"
                           .format(idx, '(peer) ' if is_peer else '', addr[0]))
+
+                    # Add non-peers to peer list
+                    if not is_peer:
+                        daemon.peers[addr[0]] = datetime.now()
+                        added_peer_count += 1
+
+                    print("Added {} peers to peer list".format(added_peer_count))
+
         else:
             print("Found {} available ledgers".format(str(len(daemon.disc_ledgers))))
             if len(daemon.disc_ledgers) > 0:
@@ -179,7 +187,7 @@ class PrivledgeShell(ExitCmd, ShellCmd):
 
         # Check for no arguments
         if len(args) == 0:
-            print("You must provide a ledger number. Use the `list` command to show ledger numbers.")
+            print("You must provide a ledger number. Use the `discover` command to show ledger numbers.")
             return
 
         # Check for a valid argument (is integer)
@@ -188,14 +196,14 @@ class PrivledgeShell(ExitCmd, ShellCmd):
             number = int(args)
 
             # Check for valid argument (is valid ledger)
-            if number < 0 or number > len(self.results):
+            if number < 0 or number > len(daemon.disc_ledgers):
                 raise ValueError("Out of Bounds Error")
         except ValueError as e:
             print("{0}\nYou did not provide a valid number: '{1}'".format(e, args))
             return
 
         # Pass the daemon the hash and members
-        daemon.join_ledger(list(self.results.keys())[number-1], list(list(self.results.values())[number-1])[0])
+        daemon.join_ledger(list(daemon.disc_ledgers.keys())[number-1], list(list(daemon.disc_ledgers.values())[number-1])[0])
 
     def do_leave(self, args):
         """Leave the currently joined ledger"""
@@ -208,7 +216,7 @@ class PrivledgeShell(ExitCmd, ShellCmd):
         if daemon.ledger is not None:
             # Print ledger status
             print("You are a member of ledger {0} and connected to {1} peers.".format(daemon.ledger.id,
-                                                                                len(daemon.peers)))
+                                                                                      len(daemon.peers)))
             # Detailed
             if args.lower() == 'detail':
                 print("\nRoot of Trust:")

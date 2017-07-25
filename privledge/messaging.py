@@ -255,8 +255,8 @@ class TCPConnectionThread(threading.Thread):
 
     def _respond(self, message):
         with lock:
-            utils.log_message(
-                "Responded with message to {0}:\n{1}".format(self._socket.getsockname(), message))
+            utils.log_message("Responded with message to {}".format(self._socket.getsockname()))
+            utils.log_message(message, utils.Level.MEDIUM)
         self._socket.sendall(message.encode())
         self._socket.shutdown(SHUT_WR)
         self._socket.recv(4096)
@@ -307,7 +307,7 @@ class UDPListener(threading.Thread):
                     if "ledger" in message.msg and message.msg["ledger"] == daemon.ledger.id:
 
                         # Add the source address and port to our list of peers and update the date
-                        daemon.peers[(addr[0], settings.BIND_PORT)] = datetime.now()
+                        daemon.peers[addr[0]] = datetime.now()
 
                         # Possible Scenarios:
                         # Heartbeat tail is same as local tail: Do nothing (in sync)
@@ -363,7 +363,7 @@ class UDPHeartbeat(threading.Thread):
 
                     message = Message(settings.MSG_TYPE_HB, message_body).__repr__()
 
-                    s.sendto(message.encode(), target)
+                    s.sendto(message.encode(), (target, settings.BIND_PORT))
                     utils.log_message("Heartbeat sent to {0}".format(target), utils.Level.LOW)
                     s.close()
 
