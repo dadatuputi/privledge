@@ -151,14 +151,21 @@ def discover(ip='<broadcast>', port=settings.BIND_PORT, timeout = settings.DISCO
 
     results = dict()
 
+    # Get our IP address - I don't like this hack:
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+    s.connect((ip, port))
+    ip_self = s.getsockname()[0]
+    s.close()
+
     # Send out discovery query
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
     message = messaging.Message(settings.MSG_TYPE_DISCOVER).__repr__()
-    s.connect((ip, port))
-    ip_self = s.getsockname()[0]
-    s.send(message.encode())
+    s.sendto(message.encode(), (ip, port))
+
 
     try:
         # Listen for responses for 10 seconds
