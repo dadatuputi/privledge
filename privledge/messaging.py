@@ -63,7 +63,7 @@ def peer_sync(target):
     for peer in message.msg:
         daemon.peers[peer] = datetime.now()
 
-    daemon.peers[target] = datetime.now()
+    daemon.peers[target[0]] = datetime.now()
 
     utils.log_message("Successfully synchronized {} peer(s) from {}".format(len(message.msg), target), utils.Level.MEDIUM)
 

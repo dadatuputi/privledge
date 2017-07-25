@@ -65,22 +65,25 @@ def ledger_listeners(start):
 
     else:
         # Kill udp listener thread
-        utils.log_message("Killing UDP Listening Thread...")
-        _udp_thread.stop.set()
-        _udp_thread.join()
-        _udp_thread = None
+        if _udp_thread is not None:
+            utils.log_message("Killing UDP Listening Thread...")
+            _udp_thread.stop.set()
+            _udp_thread.join()
+            _udp_thread = None
 
         # Kill tcp listener thread
-        utils.log_message("Killing TCP Listening Thread...")
-        _tcp_thread.stop.set()
-        _tcp_thread.join()
-        _tcp_thread = None
+        if _tcp_thread is not None:
+            utils.log_message("Killing TCP Listening Thread...")
+            _tcp_thread.stop.set()
+            _tcp_thread.join()
+            _tcp_thread = None
 
         # Kill udp hb thread
-        utils.log_message("Killing Heartbeat Thread...")
-        _udp_hb_thread.stop.set()
-        _udp_hb_thread.join()
-        _udp_hb_thread = None
+        if _udp_hb_thread is not None:
+            utils.log_message("Killing Heartbeat Thread...")
+            _udp_hb_thread.stop.set()
+            _udp_hb_thread.join()
+            _udp_hb_thread = None
 
 
 # Join a ledger with a specified public key
@@ -133,13 +136,12 @@ def join_ledger(public_key_hash, member):
 def leave_ledger():
     global ledger, _udp_thread, _tcp_thread
 
+    # Kill the listners
+    ledger_listeners(False)
+
     if ledger is not None:
         message = "Left ledger {0}".format(ledger.id)
         ledger = None
-
-        # Kill the listners
-        ledger_listeners(False)
-
     else:
         message = "Not a member of a ledger, cannot leave"
 
