@@ -44,8 +44,8 @@ class Ledger:
             if self._list[end].message_hash == message_hash:
                 idx.append(end)
                 blocks.append(self._list[end])
-            else:
-                end -= 1
+
+            end -= 1
 
         # Return none if we failed to find any message, otherwise return the lists
         if len(idx) is 0 and len(blocks) is 0:
@@ -54,12 +54,12 @@ class Ledger:
             return idx, blocks
 
     def append(self, block):
-        # Adding root (must be self-signed and add_key)
+        # Adding root (must be self-signed and add)
         if block.predecessor is None and self.root is None:
 
             # Check the block has the right type and is self-signed
-            if block.blocktype is not BlockType.add_key or not block.validate(block.message):
-                raise ValueError('Cannot add root block unless it is self-signed and of add_key blocktype',
+            if block.blocktype is not BlockType.add or not block.validate(block.message):
+                raise ValueError('Cannot add root block unless it is self-signed and of blocktype \'add\'',
                                  block.blocktype)
 
             self.root = block
@@ -86,10 +86,10 @@ class Ledger:
     def validate_block(self, block):
         idx, signatory = self.find_by_message(block.signatory_hash)
 
-        # Check that the most recent block was of type add_key
+        # Check that the most recent block was of type add
         if signatory is not None and \
                 len(signatory) > 0 and \
-                signatory[0].blocktype is BlockType.add_key:
+                signatory[0].blocktype is BlockType.add:
             return block.validate(signatory[0].message)
         else:
             return False

@@ -15,33 +15,37 @@ ledger = None
 peers = dict()
 disc_ledgers = dict()
 disc_peers = set()
-_privkey = None
+privkey = None
 _udp_thread = None
 _udp_hb_thread = None
 _tcp_thread = None
 
 
+def joined():
+    return ledger is not None
+
+
 def is_root():
-    if ledger is not None and ledger.root is not None and _privkey is not None:
-        return ledger.root.message == _privkey.publickey().exportKey().decode()
+    if ledger is not None and ledger.root is not None and privkey is not None:
+        return ledger.root.message == privkey.publickey().exportKey().decode()
     else:
         return False
 
 
 # Create a ledger with a new public and private key
-def create_ledger(privkey):
-    global ledger, _privkey
+def create_ledger(key):
+    global ledger, privkey
 
     # Generate public key and hash from the private key
-    pubkey = privkey.publickey()
+    pubkey = key.publickey()
 
     # Create root block
-    root_block = block.Block(block.BlockType.add_key, None, pubkey.exportKey().decode())
-    root_block.sign(privkey)
+    root_block = block.Block(block.BlockType.add, None, pubkey.exportKey().decode())
+    root_block.sign(key)
 
     ledger = Ledger()
     ledger.append(root_block)
-    _privkey = privkey
+    privkey = key
 
     # Start Listeners
     ledger_listeners(True)
@@ -91,7 +95,7 @@ def join_ledger(public_key_hash, member):
     global ledger
 
     # Check to make sure we aren't part of a ledger yet
-    if ledger is not None:
+    if joined:
         print("You are already a member of a ledger")
         return
 
@@ -154,7 +158,8 @@ def discover(ip='<broadcast>', port=settings.BIND_PORT, timeout = settings.DISCO
 
     results = dict()
 
-    # Get our IP address - I don't like this hack:
+    # Get our IP address - I don't like this hack but it works
+    # https://stackoverflow.com/questions/24196932/how-can-i-get-the-ip-address-of-eth0-in-python/24196955
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
