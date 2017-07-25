@@ -159,7 +159,7 @@ class PrivledgeShell(ExitCmd, ShellCmd):
             if len(daemon.disc_peers) > 0:
                 added_peer_count = 0
                 for idx, addr in enumerate(daemon.disc_peers):
-                    is_peer = (addr[0], settings.BIND_PORT) in daemon.peers
+                    is_peer = addr[0] in daemon.peers
                     print("{} | {}{}"
                           .format(idx, '(peer) ' if is_peer else '', addr[0]))
 
