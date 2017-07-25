@@ -12,9 +12,9 @@ from privledge import utils
 
 
 class BlockType(Enum):
-    add_key = 0  # message is public key
-    revoke_key = 1  # message is public key
-    text = 2  # message is text
+    add = 0         # message is public key
+    revoke = 1      # message is public key
+    text = 2        # message is text
 
     def repr_json(self):
         return self.name

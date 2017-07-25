@@ -2,6 +2,7 @@ from cmd import Cmd
 from privledge import utils
 from privledge import settings
 from privledge import daemon
+from privledge import block
 from datetime import datetime
 
 import socket
@@ -96,14 +97,14 @@ class PrivledgeShell(ExitCmd, ShellCmd):
             number = int(args)
 
             # Check for valid number
-            if number < 0 or number > 2:
+            if number < 0 or number > len(utils.Level)-1:
                 raise ValueError("Out of Bounds Error")
             else:
                 settings.debug = number
         except ValueError as e:
-            print("{0}\nYou did not provide a valid number (0-2): '{1}'".format(e, args))
+            print("{}\nYou did not provide a valid number (0-{}): '{}'".format(e, len(utils.Level)-1, args))
 
-        print("Debug mode is set to {}".format(settings.debug))
+        print("Debug is set to {} ({})".format(settings.debug, utils.Level(settings.debug).name))
 
         self.update_prompt()
 
@@ -114,7 +115,13 @@ class PrivledgeShell(ExitCmd, ShellCmd):
         raise SystemExit
 
     def do_discover(self, args):
-        """Attempt to discover other ledgers. Use with 'peers' to discover peers on the same ledger and add them to your peer list. You may provide an ip address, otherwise the local broadcast will be used. You may display cached results with the 'cached' argument."""
+        """Attempt to discover other ledgers.
+
+        Arguments:
+        peers: include to discover peers on the same ledger and add them to your peer list
+        cached: include to utilize the cache
+        ip: provide an ip address otherwise the local broadcast will be used.
+        """
 
         args = args.lower().strip().split()
 
@@ -230,9 +237,52 @@ class PrivledgeShell(ExitCmd, ShellCmd):
 
         ledger_list = daemon.ledger.list
 
+        print('\n')
+
         # Print each block
         for block in ledger_list:
             print(block)
+            print('\n')
+
+    def do_block(self, args):
+        """Add a block to the ledger.
+
+        Command: block blocktype message
+
+        Arguments:
+        blocktype: add|revoke|text
+        message: based on blocktype, may be public key or arbitrary text
+
+        eg: block add -----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9...
+        """
+
+        args = args.split()
+        if len(args) < 2:
+            print("You must provide the blocktype and message to create a block")
+            return
+        elif daemon.privkey is None:
+            print("You must have a private key added before you may create a block")
+            return
+        elif not daemon.joined():
+            print("You must be joined to a ledger in order to add a block. Try 'init'")
+            return
+
+        blocktype = args[0].lower()
+        message = args[1]
+
+        try:
+
+            blocktype = block.BlockType[blocktype]
+
+            new_block = block.Block(blocktype, daemon.ledger.tail.hash, message)
+            new_block.sign(daemon.privkey)
+
+            daemon.ledger.append(new_block)
+
+            print("Added new block to ledger")
+
+        except KeyError as e:
+            print("{} is not a valid blocktype".format(e))
 
     def update_prompt(self):
         """Update the prompt based on system variables"""
