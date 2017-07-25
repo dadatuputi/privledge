@@ -12,19 +12,25 @@ from os import chmod
 
 
 class Level(Enum):
-    LOW = 2
-    HIGH = 1
-    FORCE = 0
+    LOW = 3         # Used for repeating messages (eg heartbeat)
+    MEDIUM = 2      # Use this level for low priority logs (messaging, etc)
+    HIGH = 1        # Use this level for typical debug logging such as errors, spawning threads, and state change
+    FORCE = 0       # Use this level to force printing - useful for errors affecting ledger state
 
 
-def log_message(message, debug=Level.LOW):
+def log_message(message, debug=Level.HIGH):
+    """Log a message - use this function to do any printing to the console. From lowest priority:
+    LOW: Use for repeating messages (eg heartbeat)
+    MEDIUM: Use for low priority (eg messaging)
+    HIGH (default): Use for typical debug logging such as errors, state change, thread spawning, etc
+    FORCE: Force printing. Use to print to console regardless of debug state or for errors affecting ledger state"""
 
     if settings.debug >= debug.value:
         # Uses termcolor: https://pypi.python.org/pypi/termcolor
         color = 'green'
         background = 'on_grey'
 
-        if debug == Level.LOW:
+        if debug == Level.MEDIUM:
             color = 'green'
             background = 'on_grey'
         elif debug == Level.HIGH:
@@ -37,35 +43,35 @@ def log_message(message, debug=Level.LOW):
         cprint(message, color, background)
 
 
-def get_key(message=None):
+def get_key(key=None):
 
     # Check for RSA key
-    if message is not None:
+    if key is not None:
         try:
-            key = RSA.importKey(message.strip())
+            key = RSA.importKey(key.strip())
             return key
         except Exception as err:
-            message = "Could not parse {0} as an RSA key: {1}".format(message, err)
+            key = "Could not parse {0} as an RSA key: {1}".format(key, err)
 
             # Let's try to parse the message as a path
-            if os.path.isfile(message):
-                message = "{0} is a valid path.".format(message)
+            if os.path.isfile(key):
+                key = "{0} is a valid path.".format(key)
                 # Read given file
-                with open(message) as message_file:
+                with open(key) as message_file:
                     message_contents = message_file.read()
 
                 try:
                     key = RSA.importKey(message_contents.strip())
                     return key
                 except Exception as err:
-                    message = "Could not parse file {0} as an RSA key: {1}".format(message, err)
+                    err_msg = "Could not parse file {0} as an RSA key: {1}".format(key, err)
 
             else:
-                message = "Could not parse {0} as valid path.".format(message)
+                err_msg = "Could not parse {0} as valid path.".format(key)
 
     # Key is None
     # Log error and return
-    log_message(message)
+    log_message(err_msg)
     return None
 
 

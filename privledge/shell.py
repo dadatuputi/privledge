@@ -44,8 +44,6 @@ class ShellCmd(Cmd, object):
 # Base Privledge Shell Class
 class PrivledgeShell(ExitCmd, ShellCmd):
 
-    results = dict()
-
     def __init__(self):
         super(PrivledgeShell, self).__init__()
 
@@ -86,7 +84,7 @@ class PrivledgeShell(ExitCmd, ShellCmd):
         hash = daemon.ledger.id
 
         print("\nPublic Key Hash: {0}".format(hash))
-        utils.log_message("Added key ({0}) as a new Root of Trust".format(hash), utils.Level.HIGH)
+        utils.log_message("Added key ({0}) as a new Root of Trust".format(hash), utils.Level.FORCE)
 
         self.update_prompt()
 
@@ -114,26 +112,32 @@ class PrivledgeShell(ExitCmd, ShellCmd):
         print("Quitting")
         raise SystemExit
 
-    def do_list(self, args):
-        """Attempt to find existing ledgers. Provide an ip address, otherwise the local broadcast will be used.
-        You may force an update by entering 'update'"""
+    def do_discover(self, args):
+        """Attempt to discover other ledgers. Use with 'peers' to discover peers on the same ledger.\
+        You may provide an ip address, otherwise the local broadcast will be used. You may display cached results with\
+        the 'cached' argument."""
 
-        # No args provided
-        if len(args) == 0:
-            if len(self.results) > 0:
-                # Look for cached ledger list
-                utils.log_message("Using cached results; use 'list update' to force an update.", utils.Level.HIGH)
-                self.display_ledger()
-                return
-            else:
-                # Force update if no previous results
-                args = 'update'
+        args = args.lower().strip().split()
 
+        peers = False
+        cached = False
         ip = '<broadcast>'
 
-        # Check for 'update' keyword
-        if args.lower().strip() != 'update':
-            ip = args
+        # Parse the arguments
+        if 'peers' in args:
+            # Check that we're even a member of a ledger
+            if daemon.ledger is None or daemon.ledger.id is None:
+                print("You may not search for peers without being a member of a ledger.")
+                return
+            peers = True
+            args.remove('peers')
+        if 'cached' in args:
+            cached = len(daemon.disc_peers)>0 if peers else len(daemon.disc_ledgers)
+            args.remove('cached')
+            utils.log_message("Using cached results" if cached else "Bypassing cache because no results in cache.")
+        if len(args) > 0:
+            # If we still have arguments, we assume it's an IP address
+            ip = args[0]
 
             # Check for a valid IP
             try:
@@ -142,10 +146,33 @@ class PrivledgeShell(ExitCmd, ShellCmd):
                 print("You entered an invalid IP address")
                 return
 
-        self.results = daemon.discover_ledgers(ip)
+        # Get results of discovery and process
+        if not cached:
+            daemon.disc_ledgers = daemon.discover(ip)
 
-        # Process results
-        self.display_ledger()
+            if peers:
+                # If we're looking for peers, we're only looking for ledger ids that match ours
+                daemon.disc_peers = daemon.disc_ledgers.get(daemon.ledger.id, set())
+
+        # Display the results
+        if peers:
+            print("Found {} peers".format(str(len(daemon.disc_peers))))
+            if len(daemon.disc_peers) > 0:
+                for idx, addr in enumerate(daemon.disc_peers):
+                    is_peer = (addr[0], settings.BIND_PORT) in daemon.peers
+                    print("{} | {}{}"
+                          .format(idx, '(peer) ' if is_peer else '', addr[0]))
+        else:
+            print("Found {} available ledgers".format(str(len(daemon.disc_ledgers))))
+            if len(daemon.disc_ledgers) > 0:
+                member = ''
+                for idx,ledger in enumerate(daemon.disc_ledgers):
+                    if daemon.ledger is not None and daemon.ledger.id == ledger.strip():
+                        member = '(peer)'
+                    else:
+                        member = ''
+                    print("{0} | {4}: ({1} members) {2} {3}".format(idx, len(daemon.disc_ledgers[ledger]), ledger, member,
+                                                                    list(daemon.disc_ledgers[ledger])[0][0]))
 
     def do_join(self, args):
         """Join a ledger previously identified by the list command"""
@@ -193,7 +220,7 @@ class PrivledgeShell(ExitCmd, ShellCmd):
     def do_ledger(self, args):
         """Print the ledger"""
 
-        ledger_list = daemon.ledger.to_list()
+        ledger_list = daemon.ledger.list
 
         # Print each block
         for block in ledger_list:
@@ -210,21 +237,6 @@ class PrivledgeShell(ExitCmd, ShellCmd):
             indicators.append('debug({})'.format(settings.debug))
 
         self.prompt = '|'.join(indicators) + '> '
-
-    def display_ledger(self):
-        print("Found {0} available ledgers".format(str(len(self.results))))
-
-        if len(self.results) > 0:
-
-            member = ''
-            i = 0
-            for ledger in self.results:
-                i += 1
-                if daemon.ledger is not None and daemon.ledger.id == ledger.strip():
-                    member = '(member)'
-                else:
-                    member = ''
-                print("{0} | {4}: ({1} members) {2} {3}".format(i, len(self.results[ledger]), ledger, member, list(self.results[ledger])[0][0]))
 
     def emptyline(self):
         pass

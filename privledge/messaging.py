@@ -31,7 +31,7 @@ class Message:
 # Send a request to the target with the block hash
 # Target should return all subsequent blocks not including source of block_hash
 def ledger_sync(target, block_hash=None):
-    utils.log_message("Requesting ledger from {0}".format(target))
+    utils.log_message("Requesting ledger from {0}".format(target), utils.Level.MEDIUM)
 
     ledger_message = Message(settings.MSG_TYPE_LEDGER, block_hash).prep_tcp()
     thread = TCPMessageThread(target, ledger_message)
@@ -47,11 +47,11 @@ def ledger_sync(target, block_hash=None):
     for block in message.msg:
         daemon.ledger.append(block)
 
-    utils.log_message("Successfully synchronized {} block(s) from {}".format(len(message.msg), target))
+    utils.log_message("Successfully synchronized {} block(s) from {}".format(len(message.msg), target), utils.Level.MEDIUM)
 
 
 def peer_sync(target):
-    utils.log_message("Requesting peers from {0}".format(target))
+    utils.log_message("Requesting peers from {0}".format(target), utils.Level.MEDIUM)
 
     ledger_message = Message(settings.MSG_TYPE_PEER, None).prep_tcp()
     thread = TCPMessageThread(target, ledger_message)
@@ -65,7 +65,7 @@ def peer_sync(target):
 
     daemon.peers[target] = datetime.now()
 
-    utils.log_message("Successfully synchronized {} peer(s) from {}".format(len(message.msg), target))
+    utils.log_message("Successfully synchronized {} peer(s) from {}".format(len(message.msg), target), utils.Level.MEDIUM)
 
 
 # TCP Thread Classes #
@@ -126,7 +126,9 @@ class TCPMessageThread(threading.Thread):
     def __init__(self, target, message, timeout=5):
         super(TCPMessageThread, self).__init__()
         with lock:
-            utils.log_message("Sending Message to {0} {1}: {2}{3}".format(target[0], target[1], message[:10], '...'))
+            utils.log_message("Sending Message to {0} {1}: {2}{3}"
+                              .format(target[0], target[1], message[:10], '...'),
+                              utils.Level.MEDIUM)
         self._target = target
 
         self.message = message
@@ -162,13 +164,14 @@ class TCPMessageThread(threading.Thread):
         except Exception as e:
             with lock:
                 utils.log_message('Could not send or receive message to or from the ledger at {0}:\n{1}\n{2}'.format(
-                    tcp_message_socket.getsockname()[0], self.message, e), force=True)
+                    tcp_message_socket.getsockname()[0], self.message, e))
 
         else:
             with lock:
                 utils.log_message(
-                    "Received Response from {0} {1}: {2}{3}".format(self._target[0], self._target[1], self.message[:10],
-                                                                    '...'))
+                    "Received Response from {0} {1}: {2}{3}"
+                        .format(self._target[0], self._target[1], self.message[:10], '...'),
+                    utils.Level.MEDIUM)
 
         finally:
             tcp_message_socket.close()
@@ -203,7 +206,7 @@ class TCPConnectionThread(threading.Thread):
             return
 
         with lock:
-            utils.log_message("Received message from {0}:\n{1}".format(self._socket.getsockname(), message))
+            utils.log_message("Received message from {0}:\n{1}".format(self._socket.getsockname(), message), utils.Level.MEDIUM)
 
         message = json.loads(message, object_hook=utils.message_decoder)
 
@@ -260,8 +263,7 @@ class TCPConnectionThread(threading.Thread):
         self._socket.close()
 
 
-### UDP Threading Classes ###
-
+# UDP Threading Classes
 # Persistent UDP Listener thread that listens for discovery and heartbeat messages
 class UDPListener(threading.Thread):
     def __init__(self, ip, port):
@@ -276,7 +278,7 @@ class UDPListener(threading.Thread):
     def run(self):
         # Listen for ledger client connection requests
         with lock:
-            utils.log_message("Listening for ledger discovery queries on port {0}".format(self._port))
+            utils.log_message("Listening for ledger discovery queries on port {0}".format(self._port), utils.Level.MEDIUM)
 
         discovery_socket = socket(AF_INET, SOCK_DGRAM)
         discovery_socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
@@ -295,7 +297,8 @@ class UDPListener(threading.Thread):
                 if message.msg_type == settings.MSG_TYPE_DISCOVER:
                     # Discovery Message
                     with lock:
-                        utils.log_message("Received discovery inquiry from {0}, responding...".format(addr))
+                        utils.log_message("Received discovery inquiry from {0}, responding...".format(addr),
+                                          utils.Level.MEDIUM)
                     response = Message(settings.MSG_TYPE_SUCCESS, daemon.ledger.id).__repr__()
                     discovery_socket.sendto(response.encode(), addr)
 
@@ -324,7 +327,7 @@ class UDPListener(threading.Thread):
 
 
                         with lock:
-                            utils.log_message("Received heartbeat from {0}".format(addr))
+                            utils.log_message("Received heartbeat from {0}".format(addr), utils.Level.LOW)
 
         discovery_socket.close()
 
@@ -348,7 +351,7 @@ class UDPHeartbeat(threading.Thread):
                 if (last_beat + timedelta(seconds=settings.MSG_HB_TTL)) < datetime.now():
                     # Check for dead peers
                     with lock:
-                        utils.log_message("Removing dead peer {0}".format(target))
+                        utils.log_message("Removing dead peer {0}".format(target), utils.Level.MEDIUM)
 
                     del daemon.peers[target]
                 else:
@@ -361,7 +364,7 @@ class UDPHeartbeat(threading.Thread):
                     message = Message(settings.MSG_TYPE_HB, message_body).__repr__()
 
                     s.sendto(message.encode(), target)
-                    utils.log_message("Heartbeat sent to {0}".format(target))
+                    utils.log_message("Heartbeat sent to {0}".format(target), utils.Level.LOW)
                     s.close()
 
             # Sleep the required time between heartbeats

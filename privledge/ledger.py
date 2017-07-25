@@ -8,6 +8,10 @@ class Ledger:
         self._list = []
 
     @property
+    def list(self):
+        return self._list
+
+    @property
     def id(self):
         if self.root is not None:
             return self.root.message_hash
@@ -74,9 +78,9 @@ class Ledger:
             if not self.validate_block(block):
                 raise ValueError('The block signature is not valid', block.signature)
 
-        # Hash is correct, Signatory Exists, Signature is Valid: Add to ledger!
-        self._list.append(block)
-        self.tail = block
+            # Hash is correct, Signatory Exists, Signature is Valid: Add to ledger!
+            self._list.append(block)
+            self.tail = block
 
     # Ensure that the provided hash is valid and has not been revoked
     def validate_block(self, block):
