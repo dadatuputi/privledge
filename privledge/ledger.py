@@ -50,12 +50,12 @@ class Ledger:
         return idx, blocks
 
     def append(self, block):
-        # Adding root (must be self-signed and add)
+        # Adding root (must be self-signed and key)
         if block.predecessor is None and self.root is None:
 
             # Check the block has the right type and is self-signed
-            if block.blocktype is not BlockType.add or not block.validate(block.message):
-                raise ValueError('Cannot add root block unless it is self-signed and of blocktype \'add\'',
+            if block.blocktype is not BlockType.key or not block.validate(block.message):
+                raise ValueError('Cannot key root block unless it is self-signed and of blocktype \'key\'',
                                  block.blocktype)
 
             self.root = block
@@ -82,10 +82,10 @@ class Ledger:
     def validate_block(self, block):
         idx, signatory = self.find_by_message(block.signatory_hash)
 
-        # Check that the most recent block was of type add
+        # Check that the most recent block was of type key
         if signatory is not None and \
                 len(signatory) > 0 and \
-                signatory[0].blocktype is BlockType.add:
+                signatory[0].blocktype is BlockType.key:
             return block.validate(signatory[0].message)
         else:
             return False

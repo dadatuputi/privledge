@@ -1,4 +1,4 @@
-import base64
+import base58
 import json
 import textwrap
 from enum import Enum
@@ -12,13 +12,12 @@ from privledge import utils
 
 
 class BlockType(Enum):
-    add = 0         # message is public key
+    key = 0         # message is public key
     revoke = 1      # message is public key
     text = 2        # message is text
 
     def repr_json(self):
         return self.name
-
 
 class Block:
     def __init__(self, blocktype, predecessor, message, signature=None, signatory_hash=None):
@@ -50,9 +49,9 @@ class Block:
                 k != 'signature' and k != 'signatory_hash' and k != 'ptr_previous'}
         return json.dumps(body, cls=utils.ComplexEncoder, sort_keys=True)
 
-    @property
-    def signature_decoded(self):
-        return base64.b64decode(self.signature)
+    # @property
+    # def signature_decoded(self):
+    #     return base64.b64decode(self.signature)
 
     @property
     def is_signed(self):
@@ -70,14 +69,14 @@ class Block:
     def sign(self, privkey):
         # Generate public key and hash from the private key
         pubkey = privkey.publickey()
-        pubkey_hash = utils.gen_hash(pubkey.exportKey())
+        pubkey_hash = utils.gen_hash(utils.encode_key(privkey))
 
         # Sign the block body hash
         h = SHA256.new(self.body.encode('utf-8'))
         signer = PKCS1_v1_5.new(privkey)
 
         # Set the block signature values
-        self.signature = base64.b64encode(signer.sign(h))
+        self.signature = utils.encode(signer.sign(h))
         self.signatory_hash = pubkey_hash
 
         # Validate our signature is correct
@@ -92,10 +91,10 @@ class Block:
 
         # If pubkey is a string, turn it into a key object
         if isinstance(pubkey, str):
-            pubkey = RSA.importKey(pubkey)
+            pubkey = RSA.importKey(utils.decode(pubkey))
 
         signer = PKCS1_v1_5.new(pubkey)
-        return signer.verify(SHA256.new(self.body.encode('utf-8')), self.signature_decoded)
+        return signer.verify(SHA256.new(self.body.encode('utf-8')), utils.decode(self.signature))
 
     def __str__(self):
         return '\t\tType: {}{}\n' \
@@ -105,11 +104,11 @@ class Block:
                '\t\tSignatory Hash: {}{}\n' \
                '\t\tBlock Hash: {}' \
             .format(self.blocktype.name, ' (root)' if self._is_root else '',
-                    'None' if self._is_root else textwrap.shorten(self.predecessor, width=100, placeholder="..."),
-                    textwrap.shorten(self.message, width=100, placeholder="..."),
-                    textwrap.shorten(self.message_hash, width=100, placeholder="..."),
-                    textwrap.shorten(self.signatory_hash, width=100, placeholder="..."), ' (self-signed)' if self.is_self_signed else '',
-                    textwrap.shorten(self.hash, width=100, placeholder="..."),)
+                    'None' if self._is_root else self.predecessor,
+                    self.message[:64],
+                    self.message_hash,
+                    self.signatory_hash, ' (self-signed)' if self.is_self_signed else '',
+                    self.hash)
 
     def __repr__(self):
         body = {k: v for k, v in self.__dict__.items() if k != 'ptr_previous'}
