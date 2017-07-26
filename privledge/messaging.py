@@ -30,8 +30,8 @@ class Message:
 
 # Send a request to the target with the block hash
 # Target should return all subsequent blocks not including source of block_hash
-def ledger_sync(target, block_hash=None):
-    utils.log_message("Requesting ledger from {0}".format(target), utils.Level.MEDIUM)
+def block_sync(target, block_hash=None):
+    utils.log_message("Requesting blocks from {0}".format(target), utils.Level.MEDIUM)
 
     ledger_message = Message(settings.MSG_TYPE_LEDGER, block_hash).prep_tcp()
     thread = TCPMessageThread(target, ledger_message)
@@ -44,10 +44,13 @@ def ledger_sync(target, block_hash=None):
     if daemon.ledger is None:
         daemon.ledger = ledger.Ledger()
 
-    for block in message.msg:
-        daemon.ledger.append(block)
+    try:
+        for block in message.msg:
+            daemon.ledger.append(block)
+    except ValueError as e:
+        utils.log_message(e, utils.Level.High)
 
-    utils.log_message("Successfully synchronized {} block(s) from {}".format(len(message.msg), target), utils.Level.MEDIUM)
+    utils.log_message("Successfully synchronized {} block(s) from {}".format(len(message.msg), target), utils.Level.HIGH)
 
 
 def peer_sync(target):
@@ -322,7 +325,7 @@ class UDPListener(threading.Thread):
                             # If heartbeat tail is in our ledger, do nothing
                             # If heartbeat tail isn't in our ledger, synchronize with peer
                             if len(idx) <= 0:
-                                ledger_sync((addr[0], settings.BIND_PORT), )
+                                block_sync((addr[0], settings.BIND_PORT), daemon.ledger.tail.hash)
 
 
 

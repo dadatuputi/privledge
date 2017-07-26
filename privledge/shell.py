@@ -233,15 +233,45 @@ class PrivledgeShell(ExitCmd, ShellCmd):
             print("You are not a member of a ledger")
 
     def do_ledger(self, args):
-        """Print the ledger"""
+        """Print the ledger
 
-        ledger_list = daemon.ledger.list
+        Arguments:
+        num (default 3): print the last n blocks. If num = 0, print entire ledger
+        """
+
+        n = 3
+        ledger_list = None
+
+        # Parse arguments
+        try:
+            if len(args) > 0:
+                n = int(args)
+        except ValueError:
+            print("If you provide an argument, provide a valid integer")
+            return
+
+        ledger_list = daemon.ledger.list[-n:]
+
+        # Prepare iterator
+        revers_iter = None
+        if n <= 0 or n >= len(daemon.ledger.list) - 1:
+            reverse_iter = range(len(daemon.ledger.list)-1, -1, -1)
+        else:
+            reverse_iter = range(len(daemon.ledger.list) - 1, len(daemon.ledger.list) - 1 - n, -1)
 
         print('\n')
 
-        # Print each block
-        for block in ledger_list:
-            print(block)
+        # Print each block in reverse order
+        for i in reverse_iter:
+            print('r' if i is 0 else i, end='')
+            print(daemon.ledger.list[i])
+            print('\n')
+
+        # Check to ensure root was printed
+        if 0 not in reverse_iter:
+            print('\t\t...{} hidden blocks...\n'.format(len(daemon.ledger.list) - len(reverse_iter) - 1))
+            print('r', end='')
+            print(daemon.ledger.root)
             print('\n')
 
     def do_block(self, args):
