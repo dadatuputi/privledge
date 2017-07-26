@@ -13,7 +13,6 @@ setup(name='privledge',
       author='Bradford',
       packages=['privledge'],
       install_requires=[
-          'sshpubkeys',
           'python-daemon',
           'termcolor',
           'pycrypto',
