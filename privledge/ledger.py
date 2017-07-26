@@ -49,14 +49,14 @@ class Ledger:
 
         if match_block:
             while end >= 0:
-                if self._list[end].message_hash == query:
+                if self._list[end].hash == query:
                     idx.append(end)
                     blocks.append(self._list[end])
 
                 end -= 1
         else:
             while end >= 0:
-                if self._list[end].hash == query:
+                if self._list[end].message_hash == query:
                     idx.append(end)
                     blocks.append(self._list[end])
 
