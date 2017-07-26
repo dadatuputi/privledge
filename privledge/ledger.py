@@ -32,7 +32,14 @@ class Ledger:
             # The requested block isn't in our ledger! Return None
             return None
 
-    def find_by_message(self, message_hash):
+    def search(self, query, match_block=True):
+        """Search through the ledger
+
+        Arguments:
+        query: search string
+        match_block (default True): Match on block hash when True, otherwise match on message
+        """
+
         # Walk backward through the list
         end = len(self._list) - 1
 
@@ -40,12 +47,20 @@ class Ledger:
         idx = []
         blocks = []
 
-        while end >= 0:
-            if self._list[end].message_hash == message_hash:
-                idx.append(end)
-                blocks.append(self._list[end])
+        if match_block:
+            while end >= 0:
+                if self._list[end].message_hash == query:
+                    idx.append(end)
+                    blocks.append(self._list[end])
 
-            end -= 1
+                end -= 1
+        else:
+            while end >= 0:
+                if self._list[end].hash == query:
+                    idx.append(end)
+                    blocks.append(self._list[end])
+
+                end -= 1
 
         return idx, blocks
 
@@ -55,7 +70,7 @@ class Ledger:
 
             # Check the block has the right type and is self-signed
             if block.blocktype is not BlockType.key or not block.validate(block.message):
-                raise ValueError('Cannot key root block unless it is self-signed and of blocktype \'key\'',
+                raise ValueError('Cannot add root block unless it is self-signed and of blocktype \'key\'',
                                  block.blocktype)
 
             self.root = block
@@ -80,9 +95,10 @@ class Ledger:
 
     # Ensure that the provided hash is valid and has not been revoked
     def validate_block(self, block):
-        idx, signatory = self.find_by_message(block.signatory_hash)
+        # Search through the ledger for blocks with a hash that matches the signatory hash
+        idx, signatory = self.search(block.signatory_hash)
 
-        # Check that the most recent block was of type key
+        # Check that the most recent block was of type key (not revoke)
         if signatory is not None and \
                 len(signatory) > 0 and \
                 signatory[0].blocktype is BlockType.key:
