@@ -72,7 +72,7 @@ class Ledger:
 
             # Check that block signer (signatory_hash) is present on our ledger and valid
             if not self.validate_block(block):
-                raise ValueError('The block signature is not valid', block.signature)
+                raise ValueError('The block is not signed by an accepted key', block.signature)
 
             # Hash is correct, Signatory Exists, Signature is Valid: Add to ledger!
             self._list.append(block)

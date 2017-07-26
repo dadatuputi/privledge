@@ -62,7 +62,7 @@ class PrivledgeShell(ExitCmd, ShellCmd):
             return
         else:
             args_list = args.split()
-            if args_list[0].lower() == "generate":
+            if args_list[0].lower() == "gen":
                 # Generate an RSA key
 
                 if len(args_list) == 1:
@@ -298,7 +298,7 @@ class PrivledgeShell(ExitCmd, ShellCmd):
             return
 
         blocktype = args[0].lower()
-        message = args[1]
+        message = ' '.join(args[1:])
 
         try:
 
@@ -308,11 +308,37 @@ class PrivledgeShell(ExitCmd, ShellCmd):
             new_block.sign(daemon.privkey)
 
             daemon.ledger.append(new_block)
-
             print("Added new block to ledger")
 
         except KeyError as e:
-            print("{} is not a valid blocktype".format(e))
+            print("Could not add block: {} is not a valid blocktype".format(e))
+        except ValueError as e:
+            print("Could not add block: {}".format(e))
+
+    def do_key(self, args):
+        """Manage your local private key
+
+        Arguments:
+        gen: Generate a new RSA key
+        pub (default): Prints the public key
+        priv: Prints the private key
+        """
+
+        args = args.lower()
+
+        if len(args) <= 0 or args == 'pub':
+            if daemon.privkey is not None:
+                print(daemon.privkey.publickey().exportKey())
+            else:
+                print("You don't have a key to display")
+        elif args == 'priv':
+            print(daemon.privkey.exportKey().decode())
+        elif args == 'gen':
+            daemon.privkey = utils.privkey_generate()
+            self.do_key('')
+        else:
+            print("Unknown argument(s): {}".format(args))
+
 
     def update_prompt(self):
         """Update the prompt based on system variables"""
