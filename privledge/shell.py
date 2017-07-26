@@ -91,7 +91,7 @@ class PrivledgeShell(ExitCmd, ShellCmd):
         self.update_prompt()
 
     def do_debug(self, args):
-        """Sets printing of debug information, valid options are 0-2"""
+        """Sets printing of debug information, valid options are 0-3"""
 
         try:
             number = int(args)
@@ -168,7 +168,7 @@ class PrivledgeShell(ExitCmd, ShellCmd):
                 for idx, addr in enumerate(daemon.disc_peers):
                     is_peer = addr[0] in daemon.peers
                     print("{} | {}{}"
-                          .format(idx, '(peer) ' if is_peer else '', addr[0]))
+                          .format(idx+1, '(peer) ' if is_peer else '', addr[0]))
 
                     # Add non-peers to peer list
                     if not is_peer:
@@ -186,7 +186,7 @@ class PrivledgeShell(ExitCmd, ShellCmd):
                         member = '(peer)'
                     else:
                         member = ''
-                    print("{0} | {4}: ({1} members) {2} {3}".format(idx, len(daemon.disc_ledgers[ledger]), ledger, member,
+                    print("{0} | {4}: ({1} members) {2} {3}".format(idx+1, len(daemon.disc_ledgers[ledger]), ledger, member,
                                                                     list(daemon.disc_ledgers[ledger])[0][0]))
 
     def do_join(self, args):

@@ -13,7 +13,8 @@ Privledge
 $ git clone https://github.com/elBradford/privledge.git
 ```
 
-## [License: MIT](LICENSE.txt)
+### [License: MIT](LICENSE.txt)
 
+### [Install](INSTALL.md)
 
-## [Tutorial](TUTORIAL.md)
+### [Tutorial](TUTORIAL.md)
