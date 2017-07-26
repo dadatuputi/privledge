@@ -95,7 +95,7 @@ def join_ledger(public_key_hash, member):
     global ledger
 
     # Check to make sure we aren't part of a ledger yet
-    if joined:
+    if joined():
         print("You are already a member of a ledger")
         return
 
