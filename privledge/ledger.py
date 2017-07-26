@@ -49,14 +49,14 @@ class Ledger:
 
         if match_block:
             while end >= 0:
-                if self._list[end].hash == query:
+                if self.list[end].hash == query:
                     idx.append(end)
                     blocks.append(self._list[end])
 
                 end -= 1
         else:
             while end >= 0:
-                if self._list[end].message_hash == query:
+                if self.list[end].message_hash == query:
                     idx.append(end)
                     blocks.append(self._list[end])
 
@@ -95,8 +95,8 @@ class Ledger:
 
     # Ensure that the provided hash is valid and has not been revoked
     def validate_block(self, block):
-        # Search through the ledger for blocks with a hash that matches the signatory hash
-        idx, signatory = self.search(block.signatory_hash)
+        # Search through the ledger for blocks with a message hash that matches the signatory hash
+        idx, signatory = self.search(block.signatory_hash, match_block=False)
 
         # Check that the most recent block was of type key (not revoke)
         if signatory is not None and \

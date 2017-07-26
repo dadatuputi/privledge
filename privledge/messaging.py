@@ -48,7 +48,7 @@ def block_sync(target, block_hash=None):
         for block in message.msg:
             daemon.ledger.append(block)
     except ValueError as e:
-        utils.log_message(e, utils.Level.High)
+        utils.log_message(e)
 
     utils.log_message("Successfully synchronized {} block(s) from {}".format(len(message.msg), target), utils.Level.HIGH)
 
