@@ -308,7 +308,7 @@ class PrivledgeShell(ExitCmd, ShellCmd):
             new_block.sign(daemon.privkey)
 
             daemon.ledger.append(new_block)
-            print("Added new block to ledger")
+            print("Added new block to ledger:")
             print('\n{}\n'.format(new_block))
 
         except KeyError as e:

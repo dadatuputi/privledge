@@ -67,20 +67,16 @@ class Block:
         return self.predecessor is None and self.is_self_signed
 
     def sign(self, privkey):
-        # Generate public key and hash from the private key
-        pubkey = privkey.publickey()
-        pubkey_hash = utils.gen_hash(utils.encode_key(privkey))
-
         # Sign the block body hash
         h = SHA256.new(self.body.encode('utf-8'))
         signer = PKCS1_v1_5.new(privkey)
 
         # Set the block signature values
         self.signature = utils.encode(signer.sign(h))
-        self.signatory_hash = pubkey_hash
+        self.signatory_hash = utils.gen_hash(utils.encode_key(privkey))
 
         # Validate our signature is correct
-        if not self.validate(pubkey):
+        if not self.validate(privkey.publickey()):
             self.signature = None
             self.signatory_hash = None
 

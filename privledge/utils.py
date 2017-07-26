@@ -32,10 +32,10 @@ def log_message(message, debug=Level.HIGH):
         background = 'on_grey'
 
         if debug == Level.MEDIUM:
-            color = 'green'
+            color = 'yellow'
             background = 'on_grey'
         elif debug == Level.HIGH:
-            color = 'yellow'
+            color = 'red'
             background = 'on_grey'
         elif debug == Level.FORCE:
             color = 'red'
