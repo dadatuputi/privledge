@@ -98,12 +98,12 @@ class Block:
         return signer.verify(SHA256.new(self.body.encode('utf-8')), self.signature_decoded)
 
     def __str__(self):
-        return '\tType: {}{}\n' \
-               '\tPredecessor: {}\n' \
-               '\tMessage: {}\n' \
-               '\tMessage Hash: {}\n' \
-               '\tSignatory Hash: {}{}\n' \
-               '\tBlock Hash: {}' \
+        return '\t\tType: {}{}\n' \
+               '\t\tPredecessor: {}\n' \
+               '\t\tMessage: {}\n' \
+               '\t\tMessage Hash: {}\n' \
+               '\t\tSignatory Hash: {}{}\n' \
+               '\t\tBlock Hash: {}' \
             .format(self.blocktype.name, ' (root)' if self._is_root else '',
                     'None' if self._is_root else textwrap.shorten(self.predecessor, width=100, placeholder="..."),
                     textwrap.shorten(self.message, width=100, placeholder="..."),

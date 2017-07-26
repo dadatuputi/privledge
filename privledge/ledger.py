@@ -1,5 +1,5 @@
 from privledge.block import BlockType
-
+from privledge import utils
 
 class Ledger:
     def __init__(self):
@@ -24,7 +24,7 @@ class Ledger:
             return self._list
         else:
             # Step through the entire ledger in reverse order
-            for i, block in reversed(self._list):
+            for i, block in utils.reverse_enumerate(self._list):
                 # If we have a match, return the sublist
                 if block.hash == block_hash:
                     return self._list[i+1:]
@@ -47,11 +47,7 @@ class Ledger:
 
             end -= 1
 
-        # Return none if we failed to find any message, otherwise return the lists
-        if len(idx) is 0 and len(blocks) is 0:
-            return None
-        else:
-            return idx, blocks
+        return idx, blocks
 
     def append(self, block):
         # Adding root (must be self-signed and add)

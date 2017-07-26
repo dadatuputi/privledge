@@ -119,3 +119,9 @@ class ComplexEncoder(json.JSONEncoder):
             return obj.repr_json()
         else:
             return json.JSONEncoder.default(self, obj)
+
+
+# https://stackoverflow.com/a/529466/1486966
+def reverse_enumerate(L):
+   for index in reversed(range(len(L))):
+      yield index, L[index]

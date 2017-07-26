@@ -119,7 +119,7 @@ def join_ledger(public_key_hash, member):
                 utils.log_message("Joined ledger {}".format(public_key_hash), utils.Level.FORCE)
 
                 # Sync Ledger
-                messaging.ledger_sync(member)
+                messaging.block_sync(member)
 
                 # Request peers
                 messaging.peer_sync(member)
