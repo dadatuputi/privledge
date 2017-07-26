@@ -27,7 +27,7 @@ def joined():
 
 def is_root():
     if ledger is not None and ledger.root is not None and privkey is not None:
-        return ledger.root.message == privkey.publickey().exportKey().decode()
+        return ledger.root.message == utils.encode_key(privkey)
     else:
         return False
 
@@ -36,11 +36,8 @@ def is_root():
 def create_ledger(key):
     global ledger, privkey
 
-    # Generate public key and hash from the private key
-    pubkey = key.publickey()
-
     # Create root block
-    root_block = block.Block(block.BlockType.add, None, pubkey.exportKey().decode())
+    root_block = block.Block(block.BlockType.key, None, utils.encode_key(key))
     root_block.sign(key)
 
     ledger = Ledger()
@@ -112,7 +109,7 @@ def join_ledger(public_key_hash, member):
 
         if message.msg_type == settings.MSG_TYPE_SUCCESS:
             key = utils.get_key(message.msg)
-            key_hash = utils.gen_hash(key.publickey().exportKey())
+            key_hash = utils.gen_hash(utils.encode_key(key))
 
             if public_key_hash == key_hash:
                 # Hooray! We have a match
@@ -193,9 +190,9 @@ def discover(ip='<broadcast>', port=settings.BIND_PORT, timeout = settings.DISCO
                         continue
                     # Is the hash already in our list?
                     if message.msg not in results:
-                        # If hash isn't in the list, create a new set and add address to it
+                        # If hash isn't in the list, create a new set and key address to it
                         results[message.msg] = set()
-                    # Since there's already a set for our hash, we add to it
+                    # Since there's already a set for our hash, we key to it
                     results[message.msg].add(address)
 
             except:

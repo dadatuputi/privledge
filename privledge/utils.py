@@ -7,6 +7,7 @@ from Crypto.PublicKey import RSA
 from Crypto.Hash import SHA256
 
 import os.path
+import base58
 import json
 from os import chmod
 
@@ -47,35 +48,34 @@ def get_key(key=None):
 
     # Check for RSA key
     if key is not None:
+        # Assume key is encoded
         try:
-            key = RSA.importKey(key.strip())
-            return key
-        except Exception as err:
-            key = "Could not parse {0} as an RSA key: {1}".format(key, err)
+            return RSA.importKey(decode(key.strip()))
+        except ValueError:
 
-            # Let's try to parse the message as a path
-            if os.path.isfile(key):
-                key = "{0} is a valid path.".format(key)
-                # Read given file
-                with open(key) as message_file:
-                    message_contents = message_file.read()
+            # Try importing in a standard format (PEM bytestring)
+            try:
+                return RSA.importKey(key.strip())
+            except ValueError:
+                # Let's try to parse the message as a path
+                if os.path.isfile(key):
+                    log_message("{0} is a valid path.".format(key), Level.MEDIUM)
+                    # Read given file
+                    with open(key) as message_file:
+                        message_contents = message_file.read()
 
-                try:
-                    key = RSA.importKey(message_contents.strip())
-                    return key
-                except Exception as err:
-                    err_msg = "Could not parse file {0} as an RSA key: {1}".format(key, err)
-
-            else:
-                err_msg = "Could not parse {0} as valid path.".format(key)
+                    try:
+                        return RSA.importKey(message_contents.strip())
+                    except Exception as err:
+                        log_message("Provided key path is not valid")
+                else:
+                    log_message("Provided argument is not a key or key path")
 
     # Key is None
-    # Log error and return
-    log_message(err_msg)
     return None
 
 
-def privkey_generate(save=False, filename='id_rsa', location='', keylength=2048):
+def gen_privkey(save=False, filename='id_rsa', location='', keylength=2048):
     log_message("Generating {0}-bit RSA key".format(keylength))
 
     key = RSA.generate(keylength)
@@ -88,6 +88,21 @@ def privkey_generate(save=False, filename='id_rsa', location='', keylength=2048)
             content_file.write(key.publickey().exportKey())
 
     return key
+
+
+def encode(bytestring):
+    return base58.b58encode(bytestring)
+
+
+def decode(string):
+    return base58.b58decode(string)
+
+
+def encode_key(key, public=True):
+    if public:
+        return encode(key.publickey().exportKey('DER'))
+    else:
+        return encode(key.exportKey('DER'))
 
 
 def gen_hash(message):
