@@ -309,6 +309,7 @@ class PrivledgeShell(ExitCmd, ShellCmd):
 
             daemon.ledger.append(new_block)
             print("Added new block to ledger")
+            print('\n{}\n'.format(new_block))
 
         except KeyError as e:
             print("Could not add block: {} is not a valid blocktype".format(e))
