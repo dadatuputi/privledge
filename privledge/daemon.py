@@ -190,9 +190,9 @@ def discover(ip='<broadcast>', port=settings.BIND_PORT, timeout = settings.DISCO
                         continue
                     # Is the hash already in our list?
                     if message.msg not in results:
-                        # If hash isn't in the list, create a new set and key address to it
+                        # If hash isn't in the list, create a new set and add address to it
                         results[message.msg] = set()
-                    # Since there's already a set for our hash, we key to it
+                    # Since there's already a set for our hash, we add to it
                     results[message.msg].add(address)
 
             except:

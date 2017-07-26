@@ -118,7 +118,7 @@ class PrivledgeShell(ExitCmd, ShellCmd):
         """Attempt to discover other ledgers.
 
         Arguments:
-        peers: include to discover peers on the same ledger and key them to your peer list
+        peers: include to discover peers on the same ledger and add them to your peer list
         cached: include to utilize the cache
         ip: provide an ip address otherwise the local broadcast will be used.
         """
@@ -294,7 +294,7 @@ class PrivledgeShell(ExitCmd, ShellCmd):
             print("You must have a private key added before you may create a block")
             return
         elif not daemon.joined():
-            print("You must be joined to a ledger in order to key a block. Try 'init'")
+            print("You must be joined to a ledger in order to add a block. Try 'init'")
             return
 
         blocktype = args[0].lower()
@@ -311,9 +311,9 @@ class PrivledgeShell(ExitCmd, ShellCmd):
             print("Added new block to ledger")
 
         except KeyError as e:
-            print("Could not key block: {} is not a valid blocktype".format(e))
+            print("Could not add block: {} is not a valid blocktype".format(e))
         except ValueError as e:
-            print("Could not key block: {}".format(e))
+            print("Could not add block: {}".format(e))
 
     def do_key(self, args):
         """Manage your local private key

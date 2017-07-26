@@ -320,7 +320,7 @@ class UDPListener(threading.Thread):
                             tail = message.msg["tail"]
 
                             # Check for presence of heartbeat tail in our ledger
-                            idx, blocks = daemon.ledger.find_by_message(tail)
+                            idx, blocks = daemon.ledger.search(tail)
 
                             # If heartbeat tail is in our ledger, do nothing
                             # If heartbeat tail isn't in our ledger, synchronize with peer
@@ -362,7 +362,7 @@ class UDPHeartbeat(threading.Thread):
                     s = socket(AF_INET, SOCK_DGRAM)
 
                     message_body = {"ledger": daemon.ledger.id,
-                                    "tail": daemon.ledger.tail.message_hash}
+                                    "tail": daemon.ledger.tail.hash}
 
                     message = Message(settings.MSG_TYPE_HB, message_body).__repr__()
 
