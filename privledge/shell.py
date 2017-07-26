@@ -340,7 +340,6 @@ class PrivledgeShell(ExitCmd, ShellCmd):
         else:
             print("Unknown argument(s): {}".format(args))
 
-
     def update_prompt(self):
         """Update the prompt based on system variables"""
 
