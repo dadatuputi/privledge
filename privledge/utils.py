@@ -28,14 +28,14 @@ def log_message(message, debug=Level.HIGH):
 
     if settings.debug >= debug.value:
         # Uses termcolor: https://pypi.python.org/pypi/termcolor
-        color = 'green'
+        color = 'blue'
         background = 'on_grey'
 
         if debug == Level.MEDIUM:
-            color = 'yellow'
+            color = 'green'
             background = 'on_grey'
         elif debug == Level.HIGH:
-            color = 'red'
+            color = 'yellow'
             background = 'on_grey'
         elif debug == Level.FORCE:
             color = 'red'
