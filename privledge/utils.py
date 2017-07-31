@@ -1,4 +1,4 @@
-from termcolor import cprint
+from xtermcolor import colorize
 from enum import Enum
 from privledge import settings
 from privledge import messaging
@@ -6,11 +6,13 @@ from privledge import block
 from Crypto.PublicKey import RSA
 from Crypto.Hash import SHA256
 
+import random
 import os.path
 import base58
 import json
 from os import chmod
 
+_hashes = dict()
 
 class Level(Enum):
     LOW = 3         # Used for repeating messages (eg heartbeat)
@@ -28,20 +30,17 @@ def log_message(message, debug=Level.HIGH):
 
     if settings.debug >= debug.value:
         # Uses termcolor: https://pypi.python.org/pypi/termcolor
-        color = 'blue'
-        background = 'on_grey'
+        color = 0x0000FF
+        background = 0xAAAAAA
 
         if debug == Level.MEDIUM:
-            color = 'green'
-            background = 'on_grey'
+            color = 0x00FF00
         elif debug == Level.HIGH:
-            color = 'yellow'
-            background = 'on_grey'
+            color = 0xFFFF00
         elif debug == Level.FORCE:
-            color = 'red'
-            background = 'on_white'
+            color = 0xFF0000
 
-        cprint(message, color, background)
+        print(colorize(message, rgb=color, bg=background))
 
 
 def get_key(key=None):
@@ -140,3 +139,20 @@ class ComplexEncoder(json.JSONEncoder):
 def reverse_enumerate(L):
    for index in reversed(range(len(L))):
       yield index, L[index]
+
+
+def hash_color(hash):
+    global _hashes
+
+    if hash not in _hashes:
+        _hashes[hash] = randcolor()
+
+    colorize(hash, rgb=_hashes[hash])
+
+
+def randcolor():
+    r = random.randrange(0,0x7F) + 0x80
+    g = random.randrange(0,0x7F) + 0x80
+    b = random.randrange(0,0x7F) + 0x80
+    return (r << 16) | (g << 8) | b
+

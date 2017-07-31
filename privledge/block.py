@@ -100,10 +100,10 @@ class Block:
                '\t\tSignatory Hash: {}{}\n' \
                '\t\tBlock Hash: {}' \
             .format(self.blocktype.name, ' (root)' if self._is_root else '',
-                    'None' if self._is_root else self.predecessor,
+                    'None' if self._is_root else utils.hash_color(self.predecessor),
                     self.message[:64],
-                    self.message_hash,
-                    self.signatory_hash, ' (self-signed)' if self.is_self_signed else '',
+                    utils.hash_color(self.message_hash),
+                    utils.hash_color(self.signatory_hash), ' (self-signed)' if self.is_self_signed else '',
                     self.hash)
 
     def __repr__(self):
@@ -112,3 +112,4 @@ class Block:
 
     def repr_json(self):
         return self.__dict__
+
