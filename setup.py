@@ -14,7 +14,7 @@ setup(name='privledge',
       packages=['privledge'],
       install_requires=[
           'python-daemon',
-          'termcolor',
+          'xtermcolor',
           'pycrypto',
           'base58',
       ],
