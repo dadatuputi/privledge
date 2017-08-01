@@ -6,9 +6,7 @@ from privledge import block
 from datetime import datetime
 
 import socket
-import json
 import os
-from os import system
 
 
 # Helper class for exit functionality
