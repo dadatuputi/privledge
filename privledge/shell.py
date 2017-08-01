@@ -237,6 +237,11 @@ class PrivledgeShell(ExitCmd, ShellCmd):
         num (default 3): print the last n blocks. If num = 0, print entire ledger
         """
 
+        # Ensure we are joined to a ledger
+        if daemon.ledger is None:
+            print("You are not a member of a ledger. Please join or create one first")
+            return
+
         n = 3
         ledger_list = None
 
