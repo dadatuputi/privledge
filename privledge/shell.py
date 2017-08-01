@@ -23,22 +23,21 @@ class ExitCmd(Cmd):
 
     @staticmethod
     def do_exit(args):
+        """Exit the interpreter."""
         return True
 
     @staticmethod
-    def help_exit():
-        print("Exit the interpreter.")
+    def do_quit(args):
+        """Exit the interpreter."""
+        return True
 
 
 # Helper class for shell command functionality
 class ShellCmd(Cmd, object):
     @staticmethod
     def do_shell(s):
+        """Execute shell commands in the format 'shell <command>'"""
         os.system(s)
-
-    @staticmethod
-    def help_shell():
-        print("Execute Shell Commands")
 
 
 # Base Privledge Shell Class
@@ -52,7 +51,13 @@ class PrivledgeShell(ExitCmd, ShellCmd):
         self.cmdloop('Welcome to Privledge Shell...')
 
     def do_init(self, args):
-        """Initialize the ledger with a provided Root of Trust (RSA Public Key)"""
+        """Initialize the ledger with a provided Root of Trust (RSA Public Key)
+
+        Arguments:
+        gen: Generate an RSA key locally - to save to disk, follow with save path
+        private_key: Provide a PEM private key string
+        path: Path to PEM private key
+        """
 
         # Give error with no key, use default key, or provide
         if len(args) == 0:
@@ -89,7 +94,14 @@ class PrivledgeShell(ExitCmd, ShellCmd):
         self.update_prompt()
 
     def do_debug(self, args):
-        """Sets printing of debug information, valid options are 0-3"""
+        """Sets printing of debug information.
+
+        Arguments:
+        0: No debug information is printed
+        1: Errors and state changes are printed
+        2: Low priority logs are printed
+        3: Repeating messages are printed (eg heartbeat)
+        """
 
         try:
             number = int(args)
@@ -105,12 +117,6 @@ class PrivledgeShell(ExitCmd, ShellCmd):
         print("Debug is set to {} ({})".format(settings.debug, utils.Level(settings.debug).name))
 
         self.update_prompt()
-
-    def do_quit(self, args):
-        """Quits the shell"""
-
-        print("Quitting")
-        raise SystemExit
 
     def do_discover(self, args):
         """Attempt to discover other ledgers.
@@ -188,7 +194,11 @@ class PrivledgeShell(ExitCmd, ShellCmd):
                                                                     list(daemon.disc_ledgers[ledger])[0][0]))
 
     def do_join(self, args):
-        """Join a ledger previously identified by the list command"""
+        """Join a ledger previously identified by the discover command
+
+        Arguments:
+        n: Join the n-th ledger in the list returned by discover
+        """
 
         # Check for no arguments
         if len(args) == 0:
@@ -234,7 +244,7 @@ class PrivledgeShell(ExitCmd, ShellCmd):
         """Print the ledger
 
         Arguments:
-        num (default 3): print the last n blocks. If num = 0, print entire ledger
+        n (default 3): print the last n blocks. If n = 0, print entire ledger
         """
 
         # Ensure we are joined to a ledger
