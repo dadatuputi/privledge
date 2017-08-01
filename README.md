@@ -1,6 +1,6 @@
 Privledge
 ======
-**Privledge** is a proof-of-concept private (permissioned) distributed ledger used for public key management written in python.
+**Privledge** is a proof-of-concept private (permissioned) distributed ledger for public key management written in Python 3.5.
 
 #### Screenshot
 ![privledge screenshot](screenshot.png "privledge screenshot")

@@ -18,5 +18,5 @@ MSG_HB_TIMEOUT = 3 # Time in seconds for a hb messsage to timeout
 
 def init():
     global debug
-    debug = 1
+    debug = 0
 
