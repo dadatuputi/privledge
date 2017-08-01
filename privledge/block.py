@@ -1,6 +1,4 @@
-import base58
 import json
-import textwrap
 from enum import Enum
 
 from Crypto.Hash import SHA256
@@ -104,7 +102,7 @@ class Block:
                     self.message[:64],
                     utils.hash_color(self.message_hash),
                     utils.hash_color(self.signatory_hash), ' (self-signed)' if self.is_self_signed else '',
-                    self.hash)
+                    utils.hash_color(self.hash))
 
     def __repr__(self):
         body = {k: v for k, v in self.__dict__.items() if k != 'ptr_previous'}

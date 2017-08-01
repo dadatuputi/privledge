@@ -12,7 +12,9 @@ import base58
 import json
 from os import chmod
 
-_hashes = dict()
+_hashes_fg = dict()
+_hashes_bg = dict()
+
 
 class Level(Enum):
     LOW = 3         # Used for repeating messages (eg heartbeat)
@@ -142,17 +144,23 @@ def reverse_enumerate(L):
 
 
 def hash_color(hash):
-    global _hashes
+    global _hashes_fg, _hashes_bg
 
-    if hash not in _hashes:
-        _hashes[hash] = randcolor()
+    if hash not in _hashes_fg:
+        _hashes_fg[hash] = rand_fg()
+        _hashes_bg[hash] = rand_bg()
 
-    colorize(hash, rgb=_hashes[hash])
+    return colorize(hash, rgb=_hashes_fg[hash], bg=_hashes_bg[hash])
 
 
-def randcolor():
+def rand_fg():
     r = random.randrange(0,0x7F) + 0x80
     g = random.randrange(0,0x7F) + 0x80
     b = random.randrange(0,0x7F) + 0x80
     return (r << 16) | (g << 8) | b
 
+def rand_bg():
+    r = random.randrange(0,0x7F)
+    g = random.randrange(0,0x7F)
+    b = random.randrange(0,0x7F)
+    return (r << 16) | (g << 8) | b
