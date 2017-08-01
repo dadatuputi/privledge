@@ -92,17 +92,17 @@ class Block:
 
     def __str__(self):
         return '\t\tType: {}{}\n' \
-               '\t\tPredecessor: {}\n' \
+               '\t\tBlock Hash: {}' \
                '\t\tMessage: {}\n' \
                '\t\tMessage Hash: {}\n' \
                '\t\tSignatory Hash: {}{}\n' \
-               '\t\tBlock Hash: {}' \
+               '\t\tPredecessor: {}\n' \
             .format(self.blocktype.name, ' (root)' if self._is_root else '',
-                    'None' if self._is_root else utils.hash_color(self.predecessor),
+                    utils.hash_color(self.hash),
                     self.message[:64],
                     utils.hash_color(self.message_hash),
                     utils.hash_color(self.signatory_hash), ' (self-signed)' if self.is_self_signed else '',
-                    utils.hash_color(self.hash))
+                    'None' if self._is_root else utils.hash_color(self.predecessor))
 
     def __repr__(self):
         body = {k: v for k, v in self.__dict__.items() if k != 'ptr_previous'}
