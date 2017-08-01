@@ -33,14 +33,14 @@ def log_message(message, debug=Level.HIGH):
     if settings.debug >= debug.value:
         # Uses termcolor: https://pypi.python.org/pypi/termcolor
         color = 0x0000FF
-        background = 0xAAAAAA
+        background = 0xCCCCCC
 
         if debug == Level.MEDIUM:
             color = 0x00FF00
         elif debug == Level.HIGH:
             color = 0xFFFF00
         elif debug == Level.FORCE:
-            color = 0xFF0000
+            color = 0x0000FF
 
         print(colorize(message, rgb=color, bg=background))
 
