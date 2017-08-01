@@ -92,11 +92,11 @@ class Block:
 
     def __str__(self):
         return '\t\tType: {}{}\n' \
-               '\t\tBlock Hash: {}' \
+               '\t\tBlock Hash: {}\n' \
                '\t\tMessage: {}\n' \
                '\t\tMessage Hash: {}\n' \
                '\t\tSignatory Hash: {}{}\n' \
-               '\t\tPredecessor: {}\n' \
+               '\t\tPredecessor: {}' \
             .format(self.blocktype.name, ' (root)' if self._is_root else '',
                     utils.hash_color(self.hash),
                     self.message[:64],
