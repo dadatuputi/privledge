@@ -19,7 +19,9 @@ $
 (privledge) $ git clone git@github.com:elBradford/privledge.git .
 (privledge) $ pip install -e .
 (privledge) $ pls
+Welcome to Privledge Shell...
+> help
 ```
 `-e` is an optional pip argument that allows you to modify the code and have the changes immediately applied to the installed script - no need to reinstall to see changes you  made.
 
-#### [Continue to the Tutorial](TUTORIAL.md)
+### [Continue to the Tutorial](TUTORIAL.md)
