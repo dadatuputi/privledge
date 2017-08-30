@@ -35,7 +35,7 @@ $ git clone https://github.com/elBradford/privledge.git
 
 ## Other Resources
 4-part Blockchain overview
-- [Part 0: Blockchain Background Reading](https://bradford.la/2017/blockchain-0)
+- [Part 0: Blockchain Background](https://bradford.la/2017/blockchain-0)
 - [Part 1: Blockchain Origin Story](https://bradford.la/2017/blockchain-1)
 - [Part 2: Blockchain Present and Beyond](https://bradford.la/2017/blockchain-2)
 - [Part 3: Privledge](https://bradford.la/2017/blockchain-3)
