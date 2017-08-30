@@ -1,7 +1,10 @@
 
-# Blockchain
-
 ---?image=images/blockchain.jpg&size=cover
+
+<h1 style="color: white;">Blockchain</h1>
+<h3 style="color: white;">Background, Basics, and Beyond</h3>
+
+---
 
 ## *So Hot Right Now*
 ![So Hot Right Now!](images/sohotrightnow.jpg)
@@ -20,13 +23,12 @@
 
 # Blockchain Background
 
-+++
++++?image=images/networktypes.png&size=contain
 
-# Types of Networks
+<h1 style="text-shadow:	-3px -3px 0 #FFF, 3px -3px 0 #FFF, -3px 3px 0 #FFF, 		3px 3px 0 #FFF;">Types of Networks</h1>
 
-+++?image=images/networktypes.png&size=auto
++++?image=images/centralized.png&size=contain
 
-![Network Types](images/centralized.png)
 # Centralized
 1. Single node (single point of failure)
 1. Controlled by a single entity
@@ -39,10 +41,10 @@
 * Bulletin Board Systems (BBS)
 * File Servers
 
-+++
++++?image=images/decentralized.png&size=contain
 
-![Network Types](images/decentralized.png)
-# Decentralized
+<h1 style="text-shadow:	-3px -3px 0 #FFF, 3px -3px 0 #FFF, -3px 3px 0 #FFF, 		3px 3px 0 #FFF;">Decentralized</h1>
+
 1. Multiple nodes
 1. Controlled by the same entity
 
@@ -55,10 +57,10 @@
 * Load Balancers
 * DNS
 
-+++
++++?image=images/distributed.png&size=contain
 
-![Network Types](images/distributed.png)
-# Distributed
+<h1 style="text-shadow:	-3px -3px 0 #FFF, 3px -3px 0 #FFF, -3px 3px 0 #FFF, 		3px 3px 0 #FFF;">Distributed</h1>
+
 1. Many discrete nodes
 1. Control of any arbitrary entity
 
@@ -69,7 +71,7 @@
 * Email
 * Bittorrent
 * TOR
-* Correspondence Chess?? |
+* Correspondence Chess??
 
 ---
 
@@ -79,10 +81,10 @@
 +++
 
 **Alice** and **Eve** play Correspondence Chess
-* Alice: `1 e4` |
-* Eve replies `1 e5` |
-* Alice replies `2 Nf3` |
-* ... |
+* Alice: `1 e4` 
+* Eve replies `1 e5`
+* Alice replies `2 Nf3`
+* ...
 
 +++
 
@@ -92,27 +94,29 @@
 * Alice replies `2 Nf3`
 * ...
 
-## Distributed Ledger = Blockchain |
+#### _Distributed Ledger = Blockchain_
 
 ---
 
 # Blockchain Beginnings
-- 1991: Haber and Stornetta
-    - 
-- 2008: Satoshi Nakamoti |
 
 +++
 
 # 1991: Haber and Stornetta
+
 ![Bellcore](images/bellcore.png)
+
 _How to Time-Stamp a Digital Document_
 
 +++
 
 # 2008: Satoshi Nakamoti
+
 ![Bitcoin](images/bitcoin.png)
+
 _Bitcoin paper_
-Solving the double-spend problem...
+
+**Solves the double-spend problem**
 
 ---
 
@@ -121,6 +125,7 @@ Solving the double-spend problem...
 +++
 
 # Hashing
+
 ```{sh}
 $ echo 'blockchain' | sha256sum
 5318d781b12ce55a4a21737bc6c7906db0717d0302e654670d54fe048c82b041
@@ -131,7 +136,8 @@ fe7d0290395212c39e78ea24ba718911af16effa13b48d1f6c9d86e8355e0770
 +++
 
 # Public Key Cryptography
-![public key flowchart](images/publickey.png)
+
++++?image=images/publickey.png&size=contain
 
 ---
 
@@ -142,41 +148,43 @@ fe7d0290395212c39e78ea24ba718911af16effa13b48d1f6c9d86e8355e0770
 +++
 
 # Transactions
-![Bitcoin transactions](images/bitcoin_transactions.png)
+
++++?image=images/bitcoin_transactions.png&size=contain
 
 +++
 
 # Proof of Work
 ![blockchain](images/blockchain.png)
 
++++
+
+![blockchain](images/blockchain.png)
+
+Goal: Block hash below threshold
+
+Nonce
+- 0001 |
+- 0002 |
+- 0003 |
+- etc |
+
 ---
 
 # Bitcoin Evolution
-Growth:
-- 100GB+
-- 1092 ['Altcoins'](https://coinmarketcap.com/all/views/all/)
+
+Growth
+
+- 100GB+ |
+- 1092 'Altcoins' |
 
 +++
 
 ![Ethereum](images/ethereum.png)
+
+- Proof of Work |
 - Smart Contracts |
-- Ethereum World Computer |
-- (Ethereum Virtual Machine) |
-
-+++
-
-# Proof of Stake
-
----
-
-# Permissioned Ledgers
-**Permissionless (Public):**
-* Publicly readable (& verifiable)
-* Publicly writable
-
-**Permissioned (Private):**
-* Publicly or privately readable
-* Privately writable
+- Ethereum Virtual Machine |
+- *Ethereum World Computer* |
 
 ---
 
@@ -184,32 +192,47 @@ Growth:
 
 +++
 
+# Permissionless or Permissioned?
+
++++
+
+**Permissionless (Public):**
+
+* Publicly readable (& verifiable)
+* Publicly writable
+* Bitcoin |
+* Ethereum |
+
++++
+
+**Permissioned (Private):**
+
+* Publicly or privately readable
+* Privately writable
+* Sovrin |
+
+---
+
+# Applications
+
++++
+
 # Chain of Custody
+- Manufacturing - (RF DNA) |
+- Evidence |
 
 +++
 
 # Off-Ledger Integration
 
-+++
-
-# Insurance
-![Smart contract](images/smart-contract.png)
-
-+++
-
-# Real Estate
-
-+++
-
-# Government
-## Separate Ledgers
+Case Study: **Real Estate**
 
 +++
 
 ![Hyperledger Logo](images/hyperledger.png)
 - 2015 Linux Foundation |
 - Many different blockchains and tools |
-![Sovrin Logo](images/sovrin.svg) |
+- ![Sovrin Logo](images/sovrin.png) |
 
 ---
 
@@ -217,7 +240,7 @@ Growth:
 ## _Private Permissioned Ledger_ |
 - Python 3.5 |
 - MIT License |
-- https://github.com/elBradford/privledge |
+- github.com/elBradford/privledge |
 
 +++
 
