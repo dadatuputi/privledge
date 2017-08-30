@@ -1,5 +1,5 @@
 
----?image=images/blockchain.jpg&size=cover
+---?image=pitch/images/blockchain.jpg&size=cover
 
 <h1 style="color: white;">Blockchain</h1>
 <h3 style="color: white;">Background, Basics, and Beyond</h3>
@@ -7,7 +7,7 @@
 ---
 
 ## *So Hot Right Now*
-![So Hot Right Now!](images/sohotrightnow.jpg)
+![So Hot Right Now!](pitch/images/sohotrightnow.jpg)
 
 ---
 
@@ -23,13 +23,14 @@
 
 # Blockchain Background
 
-+++?image=images/networktypes.png&size=contain
++++?image=pitch/images/networktypes.png&size=contain
 
 <h1 style="text-shadow:	-3px -3px 0 #FFF, 3px -3px 0 #FFF, -3px 3px 0 #FFF, 		3px 3px 0 #FFF;">Types of Networks</h1>
 
-+++?image=images/centralized.png&size=contain
++++?image=pitch/images/centralized.png&size=contain
 
-# Centralized
+<h1 style="text-shadow:	-3px -3px 0 #FFF, 3px -3px 0 #FFF, -3px 3px 0 #FFF, 		3px 3px 0 #FFF;">Centralized</h1>
+
 1. Single node (single point of failure)
 1. Controlled by a single entity
 
@@ -41,7 +42,7 @@
 * Bulletin Board Systems (BBS)
 * File Servers
 
-+++?image=images/decentralized.png&size=contain
++++?image=pitch/images/decentralized.png&size=contain
 
 <h1 style="text-shadow:	-3px -3px 0 #FFF, 3px -3px 0 #FFF, -3px 3px 0 #FFF, 		3px 3px 0 #FFF;">Decentralized</h1>
 
@@ -57,7 +58,7 @@
 * Load Balancers
 * DNS
 
-+++?image=images/distributed.png&size=contain
++++?image=pitch/images/distributed.png&size=contain
 
 <h1 style="text-shadow:	-3px -3px 0 #FFF, 3px -3px 0 #FFF, -3px 3px 0 #FFF, 		3px 3px 0 #FFF;">Distributed</h1>
 
@@ -76,7 +77,7 @@
 ---
 
 # Let's Play Chess
-![Chess Pieces](images/chess_pieces.png)
+![Chess Pieces](pitch/images/chess_pieces.png)
 
 +++
 
@@ -102,17 +103,19 @@
 
 +++
 
-# 1991: Haber and Stornetta
+# 1991
+## Haber and Stornetta
 
-![Bellcore](images/bellcore.png)
+![Bellcore](pitch/images/bellcore.png)
 
 _How to Time-Stamp a Digital Document_
 
 +++
 
-# 2008: Satoshi Nakamoti
+# 2008
+## Satoshi Nakamoti
 
-![Bitcoin](images/bitcoin.png)
+![Bitcoin](pitch/images/bitcoin.png)
 
 _Bitcoin paper_
 
@@ -137,11 +140,11 @@ fe7d0290395212c39e78ea24ba718911af16effa13b48d1f6c9d86e8355e0770
 
 # Public Key Cryptography
 
-+++?image=images/publickey.png&size=contain
++++?image=pitch/images/publickey.png&size=contain
 
 ---
 
-![Bitcoin](images/bitcoin.png)
+![Bitcoin](pitch/images/bitcoin.png)
 - Transactions |
 - Proof of Work |
 
@@ -149,16 +152,16 @@ fe7d0290395212c39e78ea24ba718911af16effa13b48d1f6c9d86e8355e0770
 
 # Transactions
 
-+++?image=images/bitcoin_transactions.png&size=contain
++++?image=pitch/images/bitcoin_transactions.png&size=contain
 
 +++
 
 # Proof of Work
-![blockchain](images/blockchain.png)
+![blockchain](pitch/images/blockchain.png)
 
 +++
 
-![blockchain](images/blockchain.png)
+![blockchain](pitch/images/blockchain.png)
 
 Goal: Block hash below threshold
 
@@ -179,12 +182,11 @@ Growth
 
 +++
 
-![Ethereum](images/ethereum.png)
+![Ethereum](pitch/images/ethereum.png)
 
 - Proof of Work |
 - Smart Contracts |
-- Ethereum Virtual Machine |
-- *Ethereum World Computer* |
+- Ethereum Virtual Machine (Ethereum World Computer) |
 
 ---
 
@@ -200,8 +202,8 @@ Growth
 
 * Publicly readable (& verifiable)
 * Publicly writable
-* Bitcoin |
-* Ethereum |
+* *Bitcoin*
+* *Ethereum*
 
 +++
 
@@ -209,7 +211,7 @@ Growth
 
 * Publicly or privately readable
 * Privately writable
-* Sovrin |
+* *Sovrin*
 
 ---
 
@@ -229,10 +231,10 @@ Case Study: **Real Estate**
 
 +++
 
-![Hyperledger Logo](images/hyperledger.png)
+![Hyperledger Logo](pitch/images/hyperledger.png)
 - 2015 Linux Foundation |
 - Many different blockchains and tools |
-- ![Sovrin Logo](images/sovrin.png) |
+- ![Sovrin Logo](pitch/images/sovrin.png) |
 
 ---
 
