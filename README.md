@@ -6,14 +6,15 @@ Privledge
 
 ---
 
+**Table of Contents**
 - [Download](#download)
-    - [Current Master](#current-master-ziphttpsgithubcomelbradfordprivledgearchivemasterzip)
+    - [Current Master](#current-master-zip)
     - [Github](#github)
-- [Install](#installinstallmd)
-- [Usage](#usageusagemd)
+- [Install](#install)
+- [Usage](#usage)
 - [Other Resources](#other-resources)
 - [Credits](#credits)
-- [License: MIT](#license-mitlicensetxt)
+- [License: MIT](#license-mit)
 
 ---
 
