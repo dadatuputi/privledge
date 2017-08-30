@@ -2,7 +2,7 @@
 ---?image=images/blockchain.jpg&size=cover
 
 <h1 style="color: white;">Blockchain</h1>
-<h3 style="color: gray;">Background, Basics, and Beyond</h3>
+<h3 style="color: white;">Background, Basics, and Beyond</h3>
 
 ---
 
@@ -25,7 +25,7 @@
 
 +++?image=images/networktypes.png&size=contain
 
-# Types of Networks
+<h1 style="text-shadow:	-1px -1px 0 #FFF, 1px -1px 0 #FFF, -1px 1px 0 #FFF, 		1px 1px 0 #FFF;">Types of Networks</h1>
 
 +++?image=images/centralized.png&size=contain
 
@@ -69,7 +69,7 @@
 * Email
 * Bittorrent
 * TOR
-* Correspondence Chess?? |
+* Correspondence Chess??
 
 ---
 
