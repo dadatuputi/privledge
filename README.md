@@ -49,4 +49,7 @@ $ git clone https://github.com/elBradford/privledge.git
 ## [License: MIT](LICENSE.txt)
 
 ![privledge screenshot 2](screenshot2.png)
+<<<<<<< HEAD
 
+=======
+>>>>>>> 642763b4af9c3fda20897afa805eac11b4f95195
