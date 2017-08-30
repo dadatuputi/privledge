@@ -30,7 +30,8 @@ $ git clone https://github.com/elBradford/privledge.git
 - [![GitPitch](https://gitpitch.com/assets/badge.svg)](https://gitpitch.com/elBradford/privledge/master?grs=github&t=white)
 
 [15:52 Video Demonstration](https://www.youtube.com/watch?v=ekFHV5K-Bog)
-![Privledge Demo Video](https://www.youtube.com/embed/ekFHV5K-Bog)
+
+[![Privledge Demo Video](https://img.youtube.com/vi/ekFHV5K-Bog/0.jpg)](https://www.youtube.com/embed/ekFHV5K-Bog)
 
 ---
 ## Credits
