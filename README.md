@@ -6,6 +6,17 @@ Privledge
 
 ---
 
+- [Download](#download)
+    - [Current Master](#current-master-ziphttpsgithubcomelbradfordprivledgearchivemasterzip)
+    - [Github](#github)
+- [Install](#installinstallmd)
+- [Usage](#usageusagemd)
+- [Other Resources](#other-resources)
+- [Credits](#credits)
+- [License: MIT](#license-mitlicensetxt)
+
+---
+
 ## Download
 ### [Current Master (zip)](https://github.com/elBradford/privledge/archive/master.zip)
 
@@ -39,5 +50,7 @@ $ git clone https://github.com/elBradford/privledge.git
 - [Air Force Institute of Technology](https://www.afit.edu)
 
 ## [License: MIT](LICENSE.txt)
+
+---
 
 ![privledge screenshot 2](screenshot2.png)
