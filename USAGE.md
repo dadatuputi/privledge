@@ -1,6 +1,25 @@
+# Tutorial
+
 _A demonstration video is [available on Youtube](https://www.youtube.com/watch?v=ekFHV5K-Bog)_
 
-# Tutorial
+---
+
+**Table of Contents**
+- [Privledge Daemon](#privledge-daemon)
+- [Privledge Shell](#privledge-shell)
+- [Getting Started](#getting-started)
+	- [Initializing a Ledger](#initializing-a-ledger)
+	- [Joining a Ledger](#joining-a-ledger)
+- [Adding Blocks to the Ledger](#adding-blocks-to-the-ledger)
+- [Generating a Key](#generating-a-key)
+- [Displaying the Ledger](#displaying-the-ledger)
+- [Nitty Gritty: Protocols](#nitty-gritty-protocols)
+	- [UDP Listener](#udp-listener)
+	- [TCP Listener](#tcp-listener)
+- [To Be Implemented](#to-be-implemented)
+
+---
+
 This project consists of two main components:
 * Privledge Daemon
 * Privledge Shell

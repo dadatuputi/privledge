@@ -1,5 +1,11 @@
 # Privledge Installation
 
+**Table of Contents**
+- [Environment Recommendations](#environment-recommendations)
+- [Install from Github](#install-from-github)
+
+---
+
 ## Environment Recommendations
 _Privledge uses Python 3.5 so be sure to use the appropriate command for Python 3.5 pip_
 
@@ -23,5 +29,3 @@ Welcome to Privledge Shell...
 > help
 ```
 `-e` is an optional pip argument that allows you to modify the code and have the changes immediately applied to the installed script - no need to reinstall to see changes you  made.
-
-### [Continue to the Tutorial](TUTORIAL.md)
