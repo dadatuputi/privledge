@@ -234,12 +234,17 @@ Case Study: **Real Estate**
 ![Hyperledger Logo](pitch/images/hyperledger.png)
 - 2015 Linux Foundation |
 - Many different blockchains and tools |
-- ![Sovrin Logo](pitch/images/sovrin.png) |
+
++++
+
+# Hyperledger Indy
+
+![Sovrin Logo](pitch/images/sovrin.png)
 
 ---
 
 # Privledge
-## _Private Permissioned Ledger_ |
+## _Private Permissioned Ledger_
 - Python 3.5 |
 - MIT License |
 - github.com/elBradford/privledge |
