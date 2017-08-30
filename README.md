@@ -6,18 +6,6 @@ Privledge
 
 ---
 
-**Table of Contents**
-- [Download](#)
-    - [Current Master (zip)](#)
-    - [Github](#)
-- [Install](#)
-- [Usage](#)
-- [Other Resources](#)
-- [Credits](#)
-- [License: MIT](#)
-
----
-
 ## Download
 ### [Current Master (zip)](https://github.com/elBradford/privledge/archive/master.zip)
 
@@ -41,6 +29,9 @@ $ git clone https://github.com/elBradford/privledge.git
 - [Part 3: Privledge](https://bradford.la/2017/blockchain-3)
 - [![GitPitch](https://gitpitch.com/assets/badge.svg)](https://gitpitch.com/elBradford/privledge/master?grs=github&t=white)
 
+[15:52 Video Demonstration](https://www.youtube.com/watch?v=ekFHV5K-Bog)
+![Privledge Demo Video](https://www.youtube.com/embed/ekFHV5K-Bog)
+
 ---
 ## Credits
 - [Bradford Law](https://bradford.la) 
@@ -49,7 +40,3 @@ $ git clone https://github.com/elBradford/privledge.git
 ## [License: MIT](LICENSE.txt)
 
 ![privledge screenshot 2](screenshot2.png)
-<<<<<<< HEAD
-
-=======
->>>>>>> 642763b4af9c3fda20897afa805eac11b4f95195
