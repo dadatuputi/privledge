@@ -26,3 +26,5 @@ $ git clone https://github.com/elBradford/privledge.git
 ### [License: MIT](LICENSE.txt)
 
 ![privledge screenshot 2](screenshot2.png)
+
+[![GitPitch](https://gitpitch.com/assets/badge.svg)](https://gitpitch.com/elBradford/privledge/master?grs=github&t=white)
