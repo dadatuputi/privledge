@@ -1,100 +1,230 @@
 
-# So Hot Right Now
-![So Hot Right Now](images/sohotrightnow.jpg)
+# Blockchain
 
---?image=images/blockchain.jpg-
+---?image=/assets/md/assets/blockchain.jpg&size=cover
 
-# Introduction
+## *So Hot Right Now*
+![So Hot Right Now!](images/sohotrightnow.jpg)
 
 ---
-# Background
+
+# Bradford Law
+
+- BYU BS in EE
+- Undergraduate Cyber Training
+- Intermediate Network Warfare Training
+- Scott AFB (Scope Edge, CPT)
+- Air Force Institute of Technology: MS Cyber Operations
+
+---
+
+# Blockchain Background
 
 +++
 
 # Types of Networks
+![Network Types](images/networktypes.png)
 
 +++
 
-# Building Trust - Chess
+![Network Types](images/centralized.png)
+# Centralized
+1. Single node (single point of failure)
+1. Controlled by a single entity
+
++++
+
+### Examples:
+* Many Internet services
+* Websites (some)
+* Bulletin Board Systems (BBS)
+* File Servers
+
++++
+
+![Network Types](images/decentralized.png)
+# Decentralized
+1. Multiple nodes
+1. Controlled by the same entity
+
++++
+
+### Examples:
+* Most Internet services
+* Websites (modern)
+* Content Delivery Networks (CDN)
+* Load Balancers
+* DNS
+
++++
+
+![Network Types](images/distributed.png)
+# Distributed
+1. Many discrete nodes
+1. Control of any arbitrary entity
+
++++
+
+### Examples
+* The Internet
+* Email
+* Bittorrent
+* TOR
+* Correspondence Chess?? |
 
 ---
 
-# Blockchain
+# Let's Play Chess
+![Chess Pieces](images/chess_pieces.png)
 
 +++
 
-# Discovery: 1991
-    
+**Alice** and **Eve** play Correspondence Chess
+* Alice: `1 e4` |
+* Eve replies `1 e5` |
+* Alice replies `2 Nf3` |
+* ... |
+
 +++
 
-# Satoshi Nakamoto
-    Bitcoin
+# Distributed Ledger
+* Alice: `1 e4`
+* Eve replies `1 e5`
+* Alice replies `2 Nf3`
+* ...
+
+## Distributed Ledger = Blockchain |
 
 ---
-# Crypto Background
+
+# Blockchain Beginnings
+- 1991: Haber and Stornetta
+    - 
+- 2008: Satoshi Nakamoti |
+
++++
+
+# 1991: Haber and Stornetta
+![Bellcore](images/bellcore.png)
+_How to Time-Stamp a Digital Document_
+
++++
+
+# 2008: Satoshi Nakamoti
+![Bitcoin](images/bitcoin.png)
+_Bitcoin paper_
+Solving the double-spend problem...
+
+---
+
+# Crypto Review
 
 +++
 
 # Hashing
+```{sh}
+$ echo 'blockchain' | sha256sum
+5318d781b12ce55a4a21737bc6c7906db0717d0302e654670d54fe048c82b041
+$ echo 'Blockchain' | sha256sum
+fe7d0290395212c39e78ea24ba718911af16effa13b48d1f6c9d86e8355e0770
+```
 
 +++
 
-# Public Key Crypto
+# Public Key Cryptography
+![public key flowchart](images/publickey.png)
 
 ---
 
-# Bitcoin
+![Bitcoin](images/bitcoin.png)
+- Transactions |
+- Proof of Work |
 
 +++
+
 # Transactions
+![Bitcoin transactions](images/bitcoin_transactions.png)
 
 +++
+
 # Proof of Work
+![blockchain](images/blockchain.png)
 
 ---
+
 # Bitcoin Evolution
+Growth:
+- 100GB+
+- 1092 ['Altcoins'](https://coinmarketcap.com/all/views/all/)
 
 +++
-# Altcoins
+
+![Ethereum](images/ethereum.png)
+- Smart Contracts |
+- Ethereum World Computer |
+- (Ethereum Virtual Machine) |
 
 +++
-# Ethereum
 
-+++
 # Proof of Stake
 
 ---
 
 # Permissioned Ledgers
+**Permissionless (Public):**
+* Publicly readable (& verifiable)
+* Publicly writable
+
+**Permissioned (Private):**
+* Publicly or privately readable
+* Privately writable
 
 ---
 
 # Blockchain Future
 
 +++
-# Off-Ledger Integration
 
-+++
-# Insurance
-
-+++
-# Real Estate
-
-+++
-# Government
-
-+++
 # Chain of Custody
 
 +++
-# Hyperledger    
+
+# Off-Ledger Integration
+
++++
+
+# Insurance
+![Smart contract](images/smart-contract.png)
+
++++
+
+# Real Estate
+
++++
+
+# Government
+## Separate Ledgers
+
++++
+
+![Hyperledger Logo](images/hyperledger.png)
+- 2015 Linux Foundation |
+- Many different blockchains and tools |
+![Sovrin Logo](images/sovrin.svg) |
 
 ---
 
 # Privledge
-   
+## _Private Permissioned Ledger_ |
+- Python 3.5 |
+- MIT License |
+- https://github.com/elBradford/privledge |
+
 +++
-# Background
+
+# Demo
+
+![Privledge Demo Video](https://youtu.be/ekFHV5K-Bog)
 
 
 
@@ -108,7 +238,7 @@ Let's go over a bit of background first - trust me, it will help out later on. N
 * Decentralized
 * Distributed
 
-![Network Types](/assets/images/posts/2017/networktypes.png)
+![Image](./assets/md/assets/networktypes.png)
 *Figure 1 - Network Types (Image credit: Wikipedia)*
 
 It's important to understand that we're not only talking about computer networks, although they make up nearly the entirety of what I talk about in this article. This taxonomy of networks applies to all networks, such as social, commercial, and political. I'll try to include non-computer network examples below.
@@ -118,7 +248,7 @@ It's important to understand that we're not only talking about computer networks
 
 ## Centralized
 
-Figure 1-A: Although not a good candidate for blockchain protocols, let's understand what a centralized network is to provide some context for the other two network types. Centralized networks have [two primary characteristics](https://gnunet.org/centralized-dns):
+Figure 1-A: Although not a good candidate for blockchain protocols, let's understand what a centralized network is to provide some context for the other two network types. Centralized networks have <a target="_blank" href="https://gnunet.org/centralized-dns">two primary characteristics</a>:
 1. They consist of a single node (single point of failure)
 1. This node is under the control of a single entity
 
@@ -210,13 +340,13 @@ This important and difficult question didn't have a good answer for many years. 
 
 Consider an Analogy:
 
-![Chess Pieces](/assets/images/posts/2017/chess_pieces.png)
+![Image](./assets/md/assets/chess_pieces.png)
 
 ## Correspondence Chess
 
-<sub>I'm borrowing this analogy from National Institute of Standards and Technology (NIST)'s John Kelsey's 2016 [_Introduction to Blockchains_](/assets/bin/2017/Introduction_to_Blockchain_-_John_Kelsey.pdf)</sub>
+<sub>I'm borrowing this analogy from National Institute of Standards and Technology (NIST)'s John Kelsey's 2016 <a target="_blank" href="/assets/bin/2017/Introduction_to_Blockchain_-_John_Kelsey.pdf">_Introduction to Blockchains_</a></sub>
 
-Correspondence Chess or Chess by Mail was a very popular pre-Internet method of multiplayer 'online' gaming. [It's played still](https://en.wikipedia.org/wiki/Correspondence_chess), though its popularity has waned. 
+Correspondence Chess or Chess by Mail was a very popular pre-Internet method of multiplayer 'online' gaming. <a target="_blank" href="https://en.wikipedia.org/wiki/Correspondence_chess">It's played still</a>, though its popularity has waned. 
 
 Alice and Eve want to play Correspondence Chess. Alice makes the first move:
 * Alice: `1 e4`
@@ -243,4 +373,4 @@ I have been primarily using the word blockchain, however now that we understand 
 
 Just as the Correspondence Chess game allows mutually-distrusting players to agree on the state of the game, a distributed ledger allows mutually-distrusting users to agree on the state of the distributed system. That's how a distributed ledger (such as blockchain) inspires confidence among untrusting and anonymous nodes.
 
-Continue on to the meat of the series, [{{page.next.title}}]({{page.next.url}})
+Continue on to the meat of the series, <a target="_blank" href="{{page.next.url}}">{{page.next.title}}</a>
