@@ -11,16 +11,6 @@
 
 ---
 
-# Bradford Law
-
-- BYU BS in EE
-- Undergraduate Cyber Training (UCT)
-- Intermediate Network Warfare Training (INWT)
-- Scott AFB (Scope Edge, CPT)
-- AFIT: MS Cyber Operations
-
----
-
 # Blockchain Background
 
 +++?image=pitch/images/networktypes.png&size=contain
