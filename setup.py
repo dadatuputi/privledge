@@ -7,7 +7,7 @@ def readme():
 
 setup(name='privledge',
       version='0.1',
-      description='Private, Privleged Ledger',
+      description='Private Permissioned Ledger',
       long_description=readme(),
       url='https://github.com/elBradford/privledge',
       author='Bradford',
