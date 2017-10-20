@@ -46,6 +46,7 @@ $ git clone https://github.com/elBradford/privledge.git
 [![Privledge Demo Video](https://img.youtube.com/vi/ekFHV5K-Bog/0.jpg)](https://www.youtube.com/embed/ekFHV5K-Bog)
 
 ---
+
 ## Credits
 - [Bradford Law](https://bradford.la) 
 - [Air Force Institute of Technology](https://www.afit.edu)
