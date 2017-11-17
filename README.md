@@ -7,8 +7,6 @@ Privledge
 ![privledge screenshot](screenshot1.png "privledge screenshot")
 
 ---
-
-<<<<<<< HEAD
 =======
 **Table of Contents**
 - [Download](#download)
@@ -41,7 +39,7 @@ $ git clone https://github.com/elBradford/privledge.git
 ### [License: MIT](LICENSE.txt)
 
 ![privledge screenshot 2](screenshot2.png)
-=======
+
 ## [Usage](USAGE.md)
 
 ## Other Resources
